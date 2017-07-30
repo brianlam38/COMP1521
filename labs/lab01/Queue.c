@@ -38,8 +38,6 @@ QueueNode *makeQueueNode(int id, int size)
    return new;
 }
 
-
-
 // make a new empty Queue
 Queue makeQueue()
 {
@@ -59,9 +57,11 @@ void  freeQueue(Queue q)
    while (curr != NULL) {        // while not @end
       QueueNode *prev = curr;
       curr = curr->next;         // curr = next
-      free(prev);                // remove prev             
+      free(prev);                // remove prev  
+      assert(prev == NULL);           
    }
    free(q);
+   assert(q == NULL); 
 }
 
 // add a new item to tail of Queue
@@ -70,8 +70,10 @@ void  enterQueue(Queue q, int id, int size)
    assert(q != NULL);
    // TODO
    QueueNode *new = makeQueueNode(id, size);
+   assert(new != NULL);
 
-   q->tail->next = new; // add node to tail
+   QueueNode *tail = q->tail;
+   tail->next = new; // add node to tail
    q->tail = new;       // set new tail
 }
 
@@ -80,7 +82,22 @@ int   leaveQueue(Queue q)
 {
    assert(q != NULL);
    // TODO
-   return 0; // replace this statement
+   QueueNode *curr = q->head;
+   QueueNode *old = q->head;
+   int id = 0;
+   
+   // make second node the head
+   if (curr->next != NULL) {
+      curr = curr->next;
+      q->head = curr;
+   }
+
+   // store id + remove old head memory
+   id = old->jobid;
+   free(old);
+   assert(old == NULL);
+
+   return id;
 }
 
 // count # items in Queue
@@ -95,7 +112,13 @@ int   volumeQueue(Queue q)
 {
    assert(q != NULL);
    // TODO
-   return 0; // replace this statement
+   QueueNode *curr = q->head;    // curr ptr
+   int volume = 0;
+   while (curr != NULL) {        // while not @end
+      volume += curr->size;
+      curr = curr->next;          
+   }
+   return volume; // replace this statement
 }
 
 // return size/duration of first job in Queue
@@ -103,7 +126,11 @@ int   nextDurationQueue(Queue q)
 {
    assert(q != NULL);
    // TODO
-   return 0; // replace this statement
+   int size = 0;
+   if (q->head != NULL) {
+      size = q->head->size;
+   }
+   return size;
 }
 
 
