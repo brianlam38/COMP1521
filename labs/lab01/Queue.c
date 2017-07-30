@@ -20,11 +20,6 @@ struct QueueRep {
    QueueNode *tail; // last node
 };
 
-
-// TODO:
-// remove the #if 0 and #endif
-// once you've added code to use this function
-
 // create a new node for a Queue
 static
 QueueNode *makeQueueNode(int id, int size)
@@ -60,27 +55,34 @@ void  freeQueue(Queue q)
       curr = curr->next;         // curr = next
       free(prev);                // remove prev  
       assert(prev == NULL);           
-      printf("node removed\n");
    }
    free(q);
    assert(q == NULL); 
-   printf("queue removed\n");
 }
 
 // add a new item to tail of Queue
 void  enterQueue(Queue q, int id, int size)
 {
+   printf("=== ADDING NEW NODE TO Q ===\n");
    assert(q != NULL);
 
-   printf("=== ADDING NEW NODE TO Q ===\n");
    // TODO
    QueueNode *new = makeQueueNode(id, size);
-   assert(new != NULL);
+   QueueNode *curr = q->head;
 
-   q->tail->next = new; // add node to tail
-   q->tail = new;       // set new tail
-   printf("new tail jobid = %d \n", new->jobid);
-   printf("new node added to tail\n");
+   printf("begin loop\n");
+   while(curr != NULL) {
+      printf("going through queue\n");
+      if(curr->next == NULL) {
+         printf("null found\n");
+         curr->next = new;
+         break;
+      }
+      curr = curr->next;
+   }
+   printf("linking tail to new\n");
+   q->tail = new;
+   q->nitems++;
 }
 
 // remove item on head of Queue
@@ -88,24 +90,27 @@ int   leaveQueue(Queue q)
 {
    assert(q != NULL);
 
-   printf("=== REOVING NODE FROM Q HEAD ===\n");
+   printf("=== REMOVING NODE FROM Q HEAD ===\n");
    // TODO
+   int id = 0;
+
    QueueNode *curr = q->head;
    QueueNode *old = q->head;
-   int id = 0;
-   
-   // make second node the head
-   if (curr->next != NULL) {
-      curr = curr->next;
-      q->head = curr;
-      printf("linked new head\n");
-   }
+
+   if (q->head == NULL) return id;
+
+   printf("making second node the head\n");
+   curr = curr->next;
+   printf("linked new head\n");
+   q->head = curr;
 
    // store id + remove old head memory
    id = old->jobid;
    free(old);
    assert(old == NULL);
-      printf("removed old head\n");
+   printf("removed old head\n");
+
+   q->nitems--;
 
    return id;
 }
@@ -144,7 +149,6 @@ int   nextDurationQueue(Queue q)
    if (q->head != NULL) {
       size = q->head->size;
    }
-   printf("size = %d\n", size);
    return size;
 }
 
