@@ -20,7 +20,6 @@ struct QueueRep {
    QueueNode *tail; // last node
 };
 
-#if 0
 
 // TODO:
 // remove the #if 0 and #endif
@@ -39,7 +38,6 @@ QueueNode *makeQueueNode(int id, int size)
    return new;
 }
 
-#endif
 
 
 // make a new empty Queue
@@ -71,11 +69,10 @@ void  enterQueue(Queue q, int id, int size)
 {
    assert(q != NULL);
    // TODO
-   QueueNode *curr;      // create node + add data
-   curr->jobid = id;
-   curr->size = size;
+   QueueNode *new = makeQueueNode(id, size);
 
-   q->tail->next = curr; // add node to tial
+   q->tail->next = new; // add node to tail
+   q->tail = new;       // set new tail
 }
 
 // remove item on head of Queue
