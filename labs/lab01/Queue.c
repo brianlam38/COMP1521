@@ -56,7 +56,14 @@ Queue makeQueue()
 void  freeQueue(Queue q)
 {
    assert(q != NULL);
-   // TODO
+
+   QueueNode *curr = q->head;    // curr ptr
+   while (curr != NULL) {        // while not @end
+      QueueNode *prev = curr;
+      curr = curr->next;         // curr = next
+      free(prev);                // remove prev             
+   }
+   free(q);
 }
 
 // add a new item to tail of Queue

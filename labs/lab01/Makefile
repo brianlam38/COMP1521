@@ -1,4 +1,4 @@
-CC=dcc
+CC=gcc
 
 sim : sim.o Printers.o Queue.o
 	$(CC) -o sim sim.o Printers.o Queue.o
