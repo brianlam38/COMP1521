@@ -51,6 +51,7 @@ Queue makeQueue()
 // release space used by Queue
 void  freeQueue(Queue q)
 {
+   printf("=== FREEING QUEUE ===\n");
    assert(q != NULL);
 
    QueueNode *curr = q->head;    // curr ptr
@@ -59,28 +60,35 @@ void  freeQueue(Queue q)
       curr = curr->next;         // curr = next
       free(prev);                // remove prev  
       assert(prev == NULL);           
+      printf("node removed\n");
    }
    free(q);
    assert(q == NULL); 
+   printf("queue removed\n");
 }
 
 // add a new item to tail of Queue
 void  enterQueue(Queue q, int id, int size)
 {
    assert(q != NULL);
+
+   printf("=== ADDING NEW NODE TO Q ===\n");
    // TODO
    QueueNode *new = makeQueueNode(id, size);
    assert(new != NULL);
 
-   QueueNode *tail = q->tail;
-   tail->next = new; // add node to tail
+   q->tail->next = new; // add node to tail
    q->tail = new;       // set new tail
+   printf("new tail jobid = %d \n", new->jobid);
+   printf("new node added to tail\n");
 }
 
 // remove item on head of Queue
 int   leaveQueue(Queue q)
 {
    assert(q != NULL);
+
+   printf("=== REOVING NODE FROM Q HEAD ===\n");
    // TODO
    QueueNode *curr = q->head;
    QueueNode *old = q->head;
@@ -90,12 +98,14 @@ int   leaveQueue(Queue q)
    if (curr->next != NULL) {
       curr = curr->next;
       q->head = curr;
+      printf("linked new head\n");
    }
 
    // store id + remove old head memory
    id = old->jobid;
    free(old);
    assert(old == NULL);
+      printf("removed old head\n");
 
    return id;
 }
@@ -111,13 +121,16 @@ int   lengthQueue(Queue q)
 int   volumeQueue(Queue q)
 {
    assert(q != NULL);
+   printf("=== COUNTING Q VOLUME ===\n");
    // TODO
    QueueNode *curr = q->head;    // curr ptr
    int volume = 0;
    while (curr != NULL) {        // while not @end
+      printf("summing node size\n");
       volume += curr->size;
       curr = curr->next;          
    }
+   printf("TOTAL VOLUME = %d \n", volume);
    return volume; // replace this statement
 }
 
@@ -125,11 +138,13 @@ int   volumeQueue(Queue q)
 int   nextDurationQueue(Queue q)
 {
    assert(q != NULL);
+   printf("=== COUNTING SIZE OF Q HEAD ===\n");
    // TODO
    int size = 0;
    if (q->head != NULL) {
       size = q->head->size;
    }
+   printf("size = %d\n", size);
    return size;
 }
 
