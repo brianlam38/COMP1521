@@ -71,6 +71,11 @@ void  enterQueue(Queue q, int id, int size)
 {
    assert(q != NULL);
    // TODO
+   QueueNode *curr;      // create node + add data
+   curr->jobid = id;
+   curr->size = size;
+
+   q->tail->next = curr; // add node to tial
 }
 
 // remove item on head of Queue
