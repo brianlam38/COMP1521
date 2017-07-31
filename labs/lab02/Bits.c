@@ -59,7 +59,18 @@ void  freeBits(Bits b)
 // store result in res Bits
 void andBits(Bits a, Bits b, Bits res)
 {
-   // TODO
+   // THIS IS ASSUMING a.len = b.len
+   int len = a->nwords-1;
+   int i = 0;
+   while (i < len) {
+      if (a->words[i] == 1 && a->words[i] == b->words[i]) {
+         res->words[i] = 1;
+         i++;
+      } else {
+         res->words[i] = 0;
+         i++;
+      }
+   }
 }
 
 // form bit-wise OR of two Bits a,b
@@ -104,5 +115,8 @@ void setBitsFromString(Bits b, char *bitseq)
 // display a Bits value as sequence of 0's and 1's
 void showBits(Bits b)
 {
-   // TODO
+   int len = b->nwords;
+   for (int i = 0; i < len; i++) {
+      printf("%c", b->words[i]);
+   }
 }
