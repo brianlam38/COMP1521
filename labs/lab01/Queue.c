@@ -72,14 +72,10 @@ void  enterQueue(Queue q, int id, int size)
 
    printf("begin loop\n");
    while(curr != NULL) {
-      printf("going through queue\n");
-      if(curr->next == NULL) {
-         printf("null found\n");
-         curr->next = new;
-         break;
-      }
       curr = curr->next;
    }
+   curr = new;
+
    printf("linking tail to new\n");
    q->tail = new;
    q->nitems++;
@@ -95,20 +91,22 @@ int   leaveQueue(Queue q)
    int id = 0;
 
    QueueNode *curr = q->head;
-   QueueNode *old = q->head;
+   QueueNode *old = NULL;
 
-   if (q->head == NULL) return id;
-
-   printf("making second node the head\n");
-   curr = curr->next;
-   printf("linked new head\n");
-   q->head = curr;
-
-   // store id + remove old head memory
-   id = old->jobid;
-   free(old);
-   assert(old == NULL);
-   printf("removed old head\n");
+   printf("part 1\n");
+   if (q->head != NULL) {
+      printf("part 2\n");
+      curr = curr->next;
+      q->head = curr;
+      old = q->head;
+      id = old->jobid;
+      free(old);
+   } else {
+      printf("part 3\n");
+      id = curr->jobid;
+      printf("part 4\n");
+      free(curr);
+   }
 
    q->nitems--;
 
@@ -145,11 +143,10 @@ int   nextDurationQueue(Queue q)
    assert(q != NULL);
    printf("=== COUNTING SIZE OF Q HEAD ===\n");
    // TODO
-   int size = 0;
    if (q->head != NULL) {
-      size = q->head->size;
+      return q->head->size;
    }
-   return size;
+   return 0;
 }
 
 
