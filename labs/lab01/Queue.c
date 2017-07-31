@@ -48,11 +48,10 @@ void  freeQueue(Queue q)
 {
    assert(q != NULL);
 
-   QueueNode *curr = q->head;    // curr ptr
-   while (curr != NULL) {        // while not @end
-      QueueNode *prev = curr;
-      curr = curr->next;         // curr = next
-      free(prev);                // remove prev
+   while (q->head != NULL) {        // while not @end
+      QueueNode *temp = q->head;
+      q->head = temp->next;         // move head to next
+      free(temp);                   // remove temp
    }
    free(q);
 }
@@ -84,7 +83,6 @@ int   leaveQueue(Queue q)
 {
    assert(q != NULL);
 
-   //printf("=== REMOVING NODE FROM Q HEAD ===\n");
    // head is null
    if (q->head == NULL) return 0;
 
@@ -94,7 +92,7 @@ int   leaveQueue(Queue q)
    if (q->head->next == NULL) {
       id = q->head->jobid;
       q->nitems--;
-      free(q->head);
+      //free(q->head);
       return id;
    }
 
@@ -139,7 +137,6 @@ int   nextDurationQueue(Queue q)
 {
    assert(q != NULL);
 
-   //printf("=== COUNTING SIZE OF Q HEAD ===\n");
    if (q->head != NULL) {
       return q->head->size;
    }
