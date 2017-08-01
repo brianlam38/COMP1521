@@ -92,7 +92,9 @@ int   leaveQueue(Queue q)
    if (q->head->next == NULL) {
       id = q->head->jobid;
       q->nitems--;
-      // free(q->head);
+      QueueNode *tmp = q->head;
+      q->head = NULL;
+      free(tmp);
       return id;
    }
 
