@@ -91,6 +91,10 @@ void invertBits(Bits a, Bits res)
 void leftShiftBits(Bits b, int shift, Bits res)
 {
    // challenge problem
+
+   // HOW SHIFT WORKS
+   // 10110 0001 1100 << 2
+   // 11000 0111 0000 (shifts move along to the next word)
 }
 
 // right shift Bits
@@ -103,6 +107,12 @@ void rightShiftBits(Bits b, int shift, Bits res)
 void setBitsFromBits(Bits from, Bits to)
 {
    // TODO
+   // print from
+   //for (int i = 0; i < from->nwords; i++) {
+   //   printf("FROM: %d", from->words[i]);
+   //}
+
+
 }
 
 // assign a bit-string (sequence of 0's and 1's) to Bits
@@ -110,13 +120,54 @@ void setBitsFromBits(Bits from, Bits to)
 void setBitsFromString(Bits b, char *bitseq)
 {
    // TODO
+   // user input = string of 1's and 0's
+   // copy user input to another variables
+
+   /* PRINT TEST */
+   int i = 0;
+   while (bitseq[i] != '\0') {
+      printf("char = %c\n", bitseq[i]);
+      i++;
+   }
+
+   // read in the bit-string
+   // for each bit-string, separate length by 32 = nwords
+   // starting from words[i] until words[n], add char to b->words[i]
+
+   for (int i = 0; i < b->nwords; i++) {
+      for (int j = 0; j < BITS_PER_WORD; j++) {
+         unsigned int x = 0;
+         if (bitseq[i] == '1') x = 1;
+         b->words[j] = x;
+         printf("%c", bitseq[i]);
+         printf("%u", b->words[j]);
+      }
+   }
 }
 
 // display a Bits value as sequence of 0's and 1's
 void showBits(Bits b)
 {
+   // NOTE:
+   // ONE WORD OBJECT = 32 BITS
+   // ./bitops 80 = round to 96 = 3 WORDS (3 x 32 = 96)
+
+
+
+   // assume default 64 bits at the moment
    int len = b->nwords;
    for (int i = 0; i < len; i++) {
-      printf("%c", b->words[i]);
+      printf("WORDS ARRAY = %u\n", b->words[i]);
+   }
+   int diff = 2 - len;
+   printf("diff = %d\n", diff);
+   printf("len = %d\n", len);
+   // add in 0's from most significant digits
+   for (int i = 0; i < diff; i++) {
+      printf("%d", 0);
+   }
+   // print the rest of the bit-string value
+   for (int j = 0; j < len; j++) {
+      printf("%d", b->words[j]);
    }
 }
