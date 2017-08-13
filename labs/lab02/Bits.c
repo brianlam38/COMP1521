@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 #include "Bits.h"
 
 // assumes that an unsigned int is 32 bits
@@ -126,7 +127,7 @@ void setBitsFromString(Bits b, char *bitseq)
    /* PRINT TEST */
    int i = 0;
    while (bitseq[i] != '\0') {
-      printf("bit = %u\n", bitseq[i]);
+      printf("bit = %c\n", bitseq[i]);
       i++;
    }
 
@@ -138,6 +139,14 @@ void setBitsFromString(Bits b, char *bitseq)
    int arrayLen = b->nwords*BITS_PER_WORD;
    int strLen = strlen(bitseq);
    int diff = arrayLen - strLen;
+   int remaining = diff % BITS_PER_WORD;
+   printf("PADDING # = %d\n", diff);
+   printf("REMAINING # = %d\n", remaining);
+
+   // add padding to words
+   //for (int i = 0; i < b->nwords; i++) {
+
+   //}
 
    // read in the bit-string
    // for each bit-string, separate length by 32 = nwords
