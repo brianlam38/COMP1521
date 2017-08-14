@@ -103,13 +103,9 @@ void rightShiftBits(Bits b, int shift, Bits res)
 // copy value from one Bits object to another
 void setBitsFromBits(Bits from, Bits to)
 {
-   // TODO
-   // print from
-   //for (int i = 0; i < from->nwords; i++) {
-   //   printf("FROM: %d", from->words[i]);
-   //}
-
-
+   for (int i = 0; i < from->nwords; i++) {
+      to->words[i] = from->words[i];
+   }
 }
 
 // assign a bit-string (sequence of 0's and 1's) to Bits
