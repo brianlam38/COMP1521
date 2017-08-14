@@ -69,6 +69,7 @@ void andBits(Bits a, Bits b, Bits res)
 // store result in res Bits
 void orBits(Bits a, Bits b, Bits res)
 {
+   // Assuming a->nwords = b->nwords
    for (int i = 0; i < b->nwords; i++) {
       res->words[i] = a->words[i] | b->words[i];
    }
@@ -77,8 +78,10 @@ void orBits(Bits a, Bits b, Bits res)
 // form bit-wise negation of Bits a,b
 // store result in res Bits
 void invertBits(Bits a, Bits res)
-{
-   // TODO
+{  
+   for (int i = 0; i < a->nwords; i++) {
+      res->words[i] = ~a->words[i];
+   }
 }
 
 // left shift Bits
