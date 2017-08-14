@@ -15,7 +15,7 @@ int main(void)
 {
    struct _bit_fields x;
 
-   printf("%ul\n",sizeof(x));
+   printf("%lu\n",sizeof(x));
 
    return 0;
 }
