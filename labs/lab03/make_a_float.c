@@ -10,6 +10,13 @@
 
 typedef uint32_t Word;
 
+/* BRIAN'S COMMENTS
+ *
+ * Union works by taking up memory and it changes the data type
+ *
+ * SIGN: a single bit value, 0 = +ve / 1 = -ve
+ * EXP: unsigned 8-bit value (0-255), interpreted as a value in range (-127...128)
+ */
 struct _float {
    // define bit_fields for sign, exp and frac
    // obviously they need to be larger than 1-bit each
