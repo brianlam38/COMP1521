@@ -147,7 +147,6 @@ void showBits(Bits b)
    for (int i = 0; i < b->nwords; i++) {
       for (int j = BITS_PER_WORD-1; j >= 0; j--) {
          unsigned mask = 1u << j;                     // shift 1 for each bit that we are querying
-         if (b->words[i] == '1' && mask == '1') mask = 0;
          if (b->words[i] & mask) printf("%u", 1);     // if set, print 1
          if (!(b->words[i] & mask)) printf("%u", 0);  // if !set, print 0
       }
