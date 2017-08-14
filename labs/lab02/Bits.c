@@ -121,48 +121,20 @@ void setBitsFromBits(Bits from, Bits to)
 void setBitsFromString(Bits b, char *bitseq)
 {
    // TODO
-   // user input = string of 1's and 0's
-   // copy user input to another variables
 
-   /* PRINT TEST */
+   // print bit-string
    int i = 0;
    while (bitseq[i] != '\0') {
       printf("bit = %c\n", bitseq[i]);
       i++;
    }
 
-   // count size of bits in words array
-   // count size of bits in bit-string
-   // find diff in bits between two
-   // set value = 0 for each index until up to diff
+   
 
-   int arrayLen = b->nwords*BITS_PER_WORD;
-   int strLen = strlen(bitseq);
-   int diff = arrayLen - strLen;
-   int remaining = diff % BITS_PER_WORD;
-   printf("PADDING # = %d\n", diff);
-   printf("REMAINING # = %d\n", remaining);
-
-   // add padding to words
-   //for (int i = 0; i < b->nwords; i++) {
-
-   //}
-
-   // read in the bit-string
-   // for each bit-string, separate length by 32 = nwords
-   // starting from words[i] until words[n], add char to b->words[i]
-   /*
-   for (int i = 0; i < b->nwords; i++) {
-      for (int j = 0; j < BITS_PER_WORD; j++) {
-         unsigned int x = 0;
-         if (bitseq[i] == '1') x = 1;
-         if (bitseq[i] == '0') x = 0;
-
-         b->words[j] = x;
-         printf("%u", b->words[j]);
-      }
+   // print whole words array
+   for (int j = 0; j < b->nwords; j++) {
+      printf("word[%d] = %u\n", j, b->words[j]);
    }
-   */
 }
 
 // display a Bits value as sequence of 0's and 1's
