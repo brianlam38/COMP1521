@@ -59,17 +59,9 @@ void  freeBits(Bits b)
 // store result in res Bits
 void andBits(Bits a, Bits b, Bits res)
 {
-   // THIS IS ASSUMING a.len = b.len
-   int len = a->nwords-1;
-   int i = 0;
-   while (i < len) {
-      if (a->words[i] == 1 && a->words[i] == b->words[i]) {
-         res->words[i] = 1;
-         i++;
-      } else {
-         res->words[i] = 0;
-         i++;
-      }
+   // Assuming a->nwords = b->nwords
+   for (int i = 0; i < b->nwords; i++) {
+      res->words[i] = a->words[i] & b->words[i];
    }
 }
 
@@ -77,7 +69,9 @@ void andBits(Bits a, Bits b, Bits res)
 // store result in res Bits
 void orBits(Bits a, Bits b, Bits res)
 {
-   // TODO
+   for (int i = 0; i < b->nwords; i++) {
+      res->words[i] = a->words[i] | b->words[i];
+   }
 }
 
 // form bit-wise negation of Bits a,b
@@ -148,21 +142,16 @@ void showBits(Bits b)
    /* SHOW BITS
     *
     * Iterate through words.
-    * For each word, iterate bits and
+    * For each word, iterate through bits and check if
     *
     */
 
-   for(int i = 0; i < b->nwords; i++){
+   for (int i = 0; i < b->nwords; i++) {
       for (int j = BITS_PER_WORD-1; j >= 0; j--) {
-         // Create bit mask that shifts left of j
-         unsigned mask = 1u<<j;
-         // To ensure that when b->words and mask does not return 1
-         // change value of mask to 0. 
-         if(b->words[i] == '1' && mask == '1'){
-            mask = 0;
-         }
-         // Use bit AND operator to check whether a bit is set. If true return 1 else 0.
-         printf("%u", b->words[i]&mask?1:0);
+         unsigned mask = 1u << j;                     // Create bit mask that shifts left of j
+         if (b->words[i] == '1' && mask == '1') mask = 0;   // To ensure (b->nwords&mask) doesn't return 1, change mask val = 0
+         if (b->words[i] & mask) printf("%u", 1);     // if set, print 1
+         if (!(b->words[i] & mask)) printf("%u", 0);  // if !set, print 0
       }
    }
 }
