@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <math.h>
 #include "Bits.h"
 
 // assumes that an unsigned int is 32 bits
@@ -120,8 +119,6 @@ void setBitsFromBits(Bits from, Bits to)
 // if the bit-string is longer than the size of Bits, truncate higher-order bits
 void setBitsFromString(Bits b, char *bitseq)
 {
-   // TODO
-
    // print bit-string
    int i = 0;
    while (bitseq[i] != '\0') {
@@ -129,7 +126,22 @@ void setBitsFromString(Bits b, char *bitseq)
       i++;
    }
 
-   
+   /* SET BITS
+    *
+    * Iterate through words.
+    * For each word, iterate through bitseq and apply mask value.
+    * Apply mask value to bits in word
+    */
+   int bitlen = strlen(bitseq);
+   unsigned int mask = 0;
+   for (int i = b->nwords - 1; i > 0; i--) {
+      for (int j = 0; j < BITS_PER_WORD && bitlen > 0; j++) {
+         if (bitseq[j] == '1') mask = 1u << j;  // turn on
+         if (bitseq[j] == '0') mask = 0;        // turn off
+      }
+      b->words[i] = b->words[i] | mask;
+      //bitlen--;
+   }
 
    // print whole words array
    for (int j = 0; j < b->nwords; j++) {
