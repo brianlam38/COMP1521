@@ -123,6 +123,11 @@ void setBitsFromString(Bits b, char *bitseq)
     * For each word, iterate through bitseq and apply mask value.
     * Apply mask value to bits in word.
     */
+
+   for (int i = 0; i < b->nwords; i++) {  // reset words array
+      b->words[i] = 0;
+   }
+
    int bit = strlen(bitseq) - 1; // bitpos from LSB->MSB
    unsigned int mask = 0;
    for (int i = b->nwords - 1; i >= 0; i--) {
@@ -136,19 +141,13 @@ void setBitsFromString(Bits b, char *bitseq)
 }
 
 // display a Bits value as sequence of 0's and 1's
+// all values & with 1 = original value
 void showBits(Bits b)
 {
-   /* SHOW BITS
-    *
-    * Iterate through words.
-    * For each word, iterate through bits and check if
-    *
-    */
-
    for (int i = 0; i < b->nwords; i++) {
       for (int j = BITS_PER_WORD-1; j >= 0; j--) {
-         unsigned mask = 1u << j;                     // Create bit mask that shifts left of j
-         if (b->words[i] == '1' && mask == '1') mask = 0;   // To ensure (b->nwords&mask) doesn't return 1, change mask val = 0
+         unsigned mask = 1u << j;                     // shift 1 for each bit that we are querying
+         if (b->words[i] == '1' && mask == '1') mask = 0;
          if (b->words[i] & mask) printf("%u", 1);     // if set, print 1
          if (!(b->words[i] & mask)) printf("%u", 0);  // if !set, print 0
       }
