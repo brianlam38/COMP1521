@@ -121,7 +121,7 @@ void setBitsFromString(Bits b, char *bitseq)
 {
    // print whole bit-string
    for (int i = 0; bitseq[i] != '\0'; i++) {
-      printf("bit = %c", bitseq[i]);
+      printf("%c", bitseq[i]);
    }
    printf("\n");
 
@@ -131,15 +131,20 @@ void setBitsFromString(Bits b, char *bitseq)
     * For each word, iterate through bitseq and apply mask value.
     * Apply mask value to bits in word
     */
-   int bitlen = strlen(bitseq);
+   for (int k = 0; k < b->nwords; k++) {
+      b->words[k] = 0;
+   }
+
+   int bit = strlen(bitseq) - 1;
    unsigned int mask = 0;
-   for (int i = b->nwords - 1; i > 0; i--) {
-      for (int j = 0; j < BITS_PER_WORD && bitlen > 0; j++) {
-         if (bitseq[j] == '1') mask = 1u << j;  // turn on
-         if (bitseq[j] == '0') mask = 0;        // turn off
+   for (int i = b->nwords - 1; i >= 0; i--) {
+      for (int j = 0; j < BITS_PER_WORD && bit >= 0; j++) {
+         // turn on
+         if (bitseq[bit] == '1') mask = 1u << j;
+         if (bitseq[bit] == '0') mask = 0;
+         b->words[i] = b->words[i] | mask;
+         bit--;
       }
-      b->words[i] = b->words[i] | mask;
-      //bitlen--;
    }
 
    // print words array
@@ -151,26 +156,28 @@ void setBitsFromString(Bits b, char *bitseq)
 // display a Bits value as sequence of 0's and 1's
 void showBits(Bits b)
 {
-   // NOTE:
-   // ONE WORD OBJECT = 32 BITS
-   // ./bitops 80 = round to 96 = 3 WORDS (3 x 32 = 96)
+   /* SHOW BITS
+    *
+    * Iterate through words.
+    * For each word, iterate through bits and
+    *
+    */
+   // TODO
+   int i,j;
 
-
-
-   // assume default 64 bits at the moment
-   int len = b->nwords;
-   for (int i = 0; i < len; i++) {
-      printf("WORDS ARRAY = %u\n", b->words[i]);
-   }
-   int diff = 2 - len;
-   printf("diff = %d\n", diff);
-   printf("len = %d\n", len);
-   // add in 0's from most significant digits
-   for (int i = 0; i < diff; i++) {
-      printf("%d", 0);
-   }
-   // print the rest of the bit-string value
-   for (int j = 0; j < len; j++) {
-      printf("%d", b->words[j]);
+   // Iterate through b->nwords, left to right 
+   for(i=0; i < b->nwords; i++){
+      // Iterate through BITS_PER_WORD right to left
+      for (j = BITS_PER_WORD-1; j >= 0; j--) {
+         // Create bit mask that shifts left of j
+         unsigned mask = 1u<<j;
+         // To ensure that when b->words and mask does not return 1
+         // change value of mask to 0. 
+         if(b->words[i] == '1' && mask == '1'){
+            mask = 0;
+         }
+         // Use bit AND operator to check whether a bit is set. If true return 1 else 0.
+         printf("%u", b->words[i]&mask?1:0);
+      }
    }
 }
