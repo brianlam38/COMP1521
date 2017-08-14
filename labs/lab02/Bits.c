@@ -120,36 +120,25 @@ void setBitsFromBits(Bits from, Bits to)
 void setBitsFromString(Bits b, char *bitseq)
 {
    // print whole bit-string
-   for (int i = 0; bitseq[i] != '\0'; i++) {
-      printf("%c", bitseq[i]);
-   }
-   printf("\n");
+   // for (int i = 0; bitseq[i] != '\0'; i++) {
+   //   printf("%c", bitseq[i]);
+   // }
 
    /* SET BITS
     *
     * Iterate through words.
     * For each word, iterate through bitseq and apply mask value.
-    * Apply mask value to bits in word
+    * Apply mask value to bits in word.
     */
-   for (int k = 0; k < b->nwords; k++) {
-      b->words[k] = 0;
-   }
-
-   int bit = strlen(bitseq) - 1;
+   int bit = strlen(bitseq) - 1; // bitpos from LSB->MSB
    unsigned int mask = 0;
    for (int i = b->nwords - 1; i >= 0; i--) {
-      for (int j = 0; j < BITS_PER_WORD && bit >= 0; j++) {
-         // turn on
-         if (bitseq[bit] == '1') mask = 1u << j;
-         if (bitseq[bit] == '0') mask = 0;
+      for (int j = 0; j < BITS_PER_WORD; j++) {
+         if (bitseq[bit] == '1') mask = 1u << j;   // turn on
+         if (bitseq[bit] == '0') mask = 0;         // turn off
          b->words[i] = b->words[i] | mask;
          bit--;
       }
-   }
-
-   // print words array
-   for (int j = 0; j < b->nwords; j++) {
-      printf("word[%d] = %u\n", j, b->words[j]);
    }
 }
 
@@ -159,16 +148,12 @@ void showBits(Bits b)
    /* SHOW BITS
     *
     * Iterate through words.
-    * For each word, iterate through bits and
+    * For each word, iterate bits and
     *
     */
-   // TODO
-   int i,j;
 
-   // Iterate through b->nwords, left to right 
-   for(i=0; i < b->nwords; i++){
-      // Iterate through BITS_PER_WORD right to left
-      for (j = BITS_PER_WORD-1; j >= 0; j--) {
+   for(int i = 0; i < b->nwords; i++){
+      for (int j = BITS_PER_WORD-1; j >= 0; j--) {
          // Create bit mask that shifts left of j
          unsigned mask = 1u<<j;
          // To ensure that when b->words and mask does not return 1
