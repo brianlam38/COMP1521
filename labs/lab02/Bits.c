@@ -119,12 +119,11 @@ void setBitsFromBits(Bits from, Bits to)
 // if the bit-string is longer than the size of Bits, truncate higher-order bits
 void setBitsFromString(Bits b, char *bitseq)
 {
-   // print bit-string
-   int i = 0;
-   while (bitseq[i] != '\0') {
-      printf("bit = %c\n", bitseq[i]);
-      i++;
+   // print whole bit-string
+   for (int i = 0; bitseq[i] != '\0'; i++) {
+      printf("bit = %c", bitseq[i]);
    }
+   printf("\n");
 
    /* SET BITS
     *
@@ -143,7 +142,7 @@ void setBitsFromString(Bits b, char *bitseq)
       //bitlen--;
    }
 
-   // print whole words array
+   // print words array
    for (int j = 0; j < b->nwords; j++) {
       printf("word[%d] = %u\n", j, b->words[j]);
    }
