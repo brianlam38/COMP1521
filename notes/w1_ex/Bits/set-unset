@@ -1,0 +1,19 @@
+How to set/clear a specific bit in a byte
+
+#define BIT3  0x04  // 00000100
+
+unsigned char byte = 0xC0;
+
+
+Setting BIT3                    byte  11000000
+                                mask  00000100
+   byte = byte | BIT3;          OR    11000100
+
+
+Unsetting BIT3                  byte  11000100
+                                mask  11111011
+   byte = byte & ~BIT3;         AND   11000000
+
+where ~BIT3 = 11111011
+
+

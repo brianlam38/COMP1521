@@ -1,0 +1,29 @@
+
+
+
+
+    00100111           XOR | 0  1
+XOR 11100011  
+    --------
+    11000100
+
+
+unsigned  10101010 >> 2  00101010
+            A   A
+
+0110 1010 1111 0001
+  6    A    F    1
+
+0x6AF1
+
+signed    10101010 >> 2  11101010
+signed    10101010 >> 8  11111111
+
+starts with
+1-9 ... decimal
+0 ... octal
+0x ... hexadecimal
+
+char byte;
+
+unsigned char byte;
