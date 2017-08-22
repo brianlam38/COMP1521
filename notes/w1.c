@@ -1,4 +1,4 @@
-/* WEEK 1 NOTES
+/* WEEK 1 NOTES - INTRODUCTION
  *
  * Brian Lam
  */
