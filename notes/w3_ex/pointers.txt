@@ -1,0 +1,23 @@
+
+            Could be a valid pointer to ...
+
+0x00000000  nothing (it's probably NULL)
+
+0x00001000  int(*f)()
+
+0x00001001  nothing (not a valid function ptr)
+
+0x7f000000  char, int, uint, double
+
+0x7f000001  char
+
+0x7f000004  char, int, uint, double?
+
+
+types: char, int, unsigned int, double, int(*f)()
+
+
+
+
+
+
