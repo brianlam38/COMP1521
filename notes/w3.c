@@ -62,6 +62,27 @@ Initialising strings:
 - char a[9] = " a string";  | char *b = "a string";
 - char c[9] = {'a', ' ', 's', 't', 'r' , 'i', 'n', 'g', '\0'}; | - char *d = {'a', ' ', 's', 't', 'r' , 'i', 'n', 'g', '\0'};
 
+// Structs and Struct Offsets
+Structs are made up of components: Each component has a NAME and TYPE
+Each name maps to a byte offset within the struct.
+
+E.g. Name 'a' Type 'char' has offset = 0 in the struct s1.
+struct _s1 {
+   char   a[6];  // array of 6 1-byte chars		OFFSET = 0
+   int    b;     // 4-byte int
+   char   c;     // 1-byte char
+   double d;     // 8-byte int
+   int    e;     // 4-byte int
+   char   f;     // 1-byte char
+};
+
+// Variable length structs
+Structs can contain pointers to dynamic objects.
+
+
+
+
+
 
 
 
