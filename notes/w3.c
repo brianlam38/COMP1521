@@ -65,7 +65,6 @@ Initialising strings:
 // Structs and Struct Offsets
 Structs are made up of components: Each component has a NAME and TYPE
 Each name maps to a byte offset within the struct.
-
 E.g. Name 'a' Type 'char' has offset = 0 in the struct s1.
 struct _s1 {
    char   a[6];  // array of 6 1-byte chars		OFFSET = 0
@@ -76,8 +75,79 @@ struct _s1 {
    char   f;     // 1-byte char
 };
 
+If you have a struct with many different types, you should declare the types
+in an appropriate order so that you dont waste space with padding.				  STRUCT
+E.g. dont start with a char then an int, otherwise you waste 3 bytes for padding. | char | pad | pad | pad |
+	(Structs start on a 4-byte boundary. ints are laid out on a 4-byte boundary)  |  int | int | int | int |
+
 // Variable length structs
-Structs can contain pointers to dynamic objects.
+Amount of memory allocated to a struct is determined dynamically.
+
+
+// Bit-wise structs
+Bit-field structs:
+- Specify unnamed COMPONENTS using standard types
+- Specify named individual BIT-FIELDS in each component
+
+struct _bit_fields {
+	unsigned int first_bit	  : 1,			' unsigned int = component '
+				 next_7_bits  : 7,			' first_bit etc. = bit-fields '
+				 last_24_bits : 24;
+}
+sizeof(struct _bit_fields) is 4 bytes -> 24 + 7 + 1 = 32 bits = 4 bytes
+
+Another example:
+
+/* GRAPHICS OBJECTS */
+struct _object { // comprised of two 32-bit words
+	unsigned int 	red		: 5,	// 5 bits for red
+					blue	: 5,	// 5 bits for blue
+					green	: 5,	// 5 bits for green
+					pad 	: 1,	// 1 bit to pad to short
+					ident	: 16;	// 16 bits for object ID
+	unsigned int 	height  : 6,	// 6 bits for object height
+					width 	: 6,	// 6 bits for object width
+					xcoord 	: 9,	// 9 bits for x-coordinate
+					ycoord	: 9;	// 9 bits for y-coordinate
+}
+
+struct _object oval;
+.
+.
+oval.red = 4; oval.blue = 31; oval.green = 15;
+oval.height = 5; oval.width = 15;
+/* END OF EXAMPLE */
+
+Bit-fields provide an alternative to bit operators and masks:
+
+typedef unsigned int uint;         struct _privs {
+typedef uint privs;                   unsigned int
+#define OWNER_READ  (1 << 8)             owner_read  : 1,
+#define OWNER_WRITE (1 << 7)             owner_write : 1,
+#define OWNER_EXEC  (1 << 6)             owner_exec  : 1,
+...                                      ...
+#define OTHER_WRITE (1 << 1)             other_write : 1,
+#define OTHER_EXEC  (1 << 0)             other_exec  : 1;
+unsigned int myPrivs;              } myPrivs;
+
+// give owner execute permission on file
+myPrivs |= OWNER_EXEC;             myPrivs.owner_exec = 1;
+
+// prevent others from writing on file
+myPrivs &= ~OTHER_WRITE;           myPrivs.other_write = 0;
+
+// check whether file is readable to all
+open = myPrivs & OTHER_READ;       open = myPrivs.other_read;
+
+
+
+
+
+
+
+
+
+
 
 
 
