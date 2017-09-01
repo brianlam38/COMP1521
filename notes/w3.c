@@ -80,11 +80,19 @@ in an appropriate order so that you dont waste space with padding.				  STRUCT
 E.g. dont start with a char then an int, otherwise you waste 3 bytes for padding. | char | pad | pad | pad |
 	(Structs start on a 4-byte boundary. ints are laid out on a 4-byte boundary)  |  int | int | int | int |
 
+//=========================
 // Variable length structs
+//=========================
 Amount of memory allocated to a struct is determined dynamically.
+You can cheat and allocate more space than size of the struct by:
+		
+	new = sizeof(Node);					// normally malloc'ing the struct
+	char *str = malloc(strlen(s)+1);	// allocate space for string that is longer than struct
 
-
-// Bit-wise structs
+//==================
+// Bit-wise structs 
+//==================
+C allows you to have full control of string, with bit-fields.
 Bit-field structs:
 - Specify unnamed COMPONENTS using standard types
 - Specify named individual BIT-FIELDS in each component
@@ -92,7 +100,7 @@ Bit-field structs:
 struct _bit_fields {
 	unsigned int first_bit	  : 1,			' unsigned int = component '
 				 next_7_bits  : 7,			' first_bit etc. = bit-fields '
-				 last_24_bits : 24;
+				 last_24_bits : 24;			' There is basically only ONE uint in the struct '
 }
 sizeof(struct _bit_fields) is 4 bytes -> 24 + 7 + 1 = 32 bits = 4 bytes
 
@@ -100,22 +108,24 @@ Another example:
 
 /* GRAPHICS OBJECTS */
 struct _object { // comprised of two 32-bit words
-	unsigned int 	red		: 5,	// 5 bits for red
-					blue	: 5,	// 5 bits for blue
-					green	: 5,	// 5 bits for green
-					pad 	: 1,	// 1 bit to pad to short
-					ident	: 16;	// 16 bits for object ID
-	unsigned int 	height  : 6,	// 6 bits for object height
-					width 	: 6,	// 6 bits for object width
-					xcoord 	: 9,	// 9 bits for x-coordinate
-					ycoord	: 9;	// 9 bits for y-coordinate
+	// first uint
+	unsigned int 	red		: 5,	// 5 bits for red 			|
+					blue	: 5,	// 5 bits for blue			|
+					green	: 5,	// 5 bits for green			| 32 bits
+					pad 	: 1,	// 1 bit to pad to short	|
+					ident	: 16;	// 16 bits for object ID 	|
+	// second uint
+	unsigned int 	height  : 6,	// 6 bits for object height |
+					width 	: 6,	// 6 bits for object width  | 32 bits
+					xcoord 	: 9,	// 9 bits for x-coordinate  |
+					ycoord	: 9;	// 9 bits for y-coordinate  |
 }
 
 struct _object oval;
 .
 .
-oval.red = 4; oval.blue = 31; oval.green = 15;
-oval.height = 5; oval.width = 15;
+oval.red = 4; oval.blue = 31; oval.green = 15;	// if oval.blue = 40 for example, it will be an
+oval.height = 5; oval.width = 15;				//				  overflow = error
 /* END OF EXAMPLE */
 
 Bit-fields provide an alternative to bit operators and masks:
@@ -131,13 +141,59 @@ typedef uint privs;                   unsigned int
 unsigned int myPrivs;              } myPrivs;
 
 // give owner execute permission on file
-myPrivs |= OWNER_EXEC;             myPrivs.owner_exec = 1;
+myPrivs |= OWNER_EXEC;    // OR = turn on   
+myPrivs.owner_exec = 1;
 
 // prevent others from writing on file
-myPrivs &= ~OTHER_WRITE;           myPrivs.other_write = 0;
+myPrivs &= ~OTHER_WRITE;  // AND + ~ = turn off
+myPrivs.other_write = 0;
 
 // check whether file is readable to all
-open = myPrivs & OTHER_READ;       open = myPrivs.other_read;
+open = myPrivs & OTHER_READ;
+open = myPrivs.other_read;
+
+//========
+// UNIONS
+//========
+Is a single 4-bytes object.
+							// General syntax for union
+union _alltypes {			union Tag {
+	int intval;					Type1 Member1;
+	char strval[4];				Type2 Member2;
+	char charval;				Type3 Member3;
+	float floatval;			} uvar;
+};
+union _alltypes myUnion;
+
+sizeof(Union) = size of the largest the Member in the union
+We can switch between the types / members in the union
+
+//==================
+// ENUMERATED TYPES
+//==================
+Enumeration allows us to create our own collection of constants.
+It is to make your code more readable.
+
+typedef enum { RED, YELLOW, BLUE } PrimaryColours;
+typedef enum { LOCAL, INTL } StudentType;
+^The names above are assigned consecutive int values, starting from 0
+
+Above, PrimaryColours type is equivalent to:
+#define RED 	0
+#define YELLOW	1
+#define BLUE 	2	
+
+Enums are also useful for bit-flagging.
+If we wanted to create GREEN, we would need to:
+GREEN = YELLOW | BLUE
+	  =   00000001
+	  	| 00000010
+	  	-----------
+	  =   00000011
+	  = 3
+
+
+
 
 
 
