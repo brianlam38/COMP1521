@@ -1,0 +1,18 @@
+Label Address      Content        Notes
+x:    0x10010000   0x00010101     0x10101 = 65793
+y:    0x10010004   0x10010000     0x101   = 257
+z:    0x10010008   0x0000002A
+eol:  0x1001000C   0x0000000A
+
+Instruction            Address        Value
+* la $t0, x            -              -
+* lw $t0, x            -              -
+* lb $t0, x            -              -
+  la $s0, z            -              -
+* lw $t0, ($s0)        -              -
+  li $s0, 8            -              -
+* lw $t0, y($s0)       -              -
+  lw $s0, y            -              -
+* lw $t0  ($s0)        -              -
+  li $s0, 4            -              -
+* lw $t0, x+4($s0)     -              -
