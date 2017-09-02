@@ -83,8 +83,9 @@ $5	 		$a1	 		second argument to a function/subroutine, if needed
 $6	 		$a2	 		third argument to a function/subroutine, if needed
 $7	 		$a3	 		fourth argument to a function/subroutine, if needed
 $8..$15	 	$t0..$t7	temporary; must be saved by caller to subroutine; subroutine can overwrite
+
 $16..$23	$s0..$s7	safe function variable; must not be overwritten by called subroutine
-$24..$25	$t8..$t9	temporary; must be saved by caller to subroutine; subroutine can overwrite
+$24..$25	$t8..$t9	temp registers; must be saved by caller to subroutine; subroutine can overwrite
 $26..$27	$k0..$k1	for kernel use; may change unexpectedly
 $28	 		$gp	 	global pointer
 $29	 		$sp	 	stack pointer
@@ -101,15 +102,51 @@ $f12..$f14	 	used for first two double-precision function arguments
 $f16..$f18	 	temporary registers; used for expression evaluation
 $f20..$f30	 	saved registers; value is preserved across function calls
 
-MIPS assembly language programs contain:
-- Comments    						  '#'
-- Labels				appended with ':'
-- Directives	symbol beginning with '.'
-- Assembly language instructions
-Programmers need to specify:
-- Data objects that live in the data regions
-- Functions 'instruction sequences' that live in the code/text region.
-- Each instruction or directive appears on its own line
+Each line in a MIPS assembly program contains:
+- Comments    						  '#'	
+- Labels				appended with ':'	-> Labels = symbolic names given to memory addresses
+- Directives	symbol beginning with '.'	-> Special instructions / kind of like C pre-processor #include etc.
+- Assembly language Instructions 			   Directives tell the assembler to do something.
+Programmers need to:
+- Specify where data objects exist in memory + give them a name so you can reference them.
+- Specify functions / 'instruction sequences' that live in the code/text region.
+- Specify each instruction or directive on its own line.
+
+//====================================
+// GENERIC STRUCTURE OF MIPS PROGRAMS
+//====================================
+# Prog.s ... comment giving description of function
+# Author ...
+
+		.data 		# everything below will be put into "data segment" of memory
+msg:	.asciiz	"Hello, MIPS\n"	# direct inserts the str at the 1st location in the data segment
+								# Assembler will look at "msg" label and associate the msg label
+								# as the start of the segment
+
+		.text 		# everything below will be put into "code/text segment" of memory
+		.globl main # "main is a label/name that is going to be known globally"
+
+main:				# indicates start of code i.e. first user instruction to execute.
+		la $a0, msg	# load the argument string into register $a0
+		li $v0, 4	# load the system call: 4 = 'print' system call
+		syscall		# print the string / invoke the system call
+		jr $ra 		# jump function, return to caller: '__start' which is the start of the 'code/text segment'
+					#									invoke the main program. Return to the next instruction.
+
+# End of program; leave a blank line to make SPIM happy
+
+//====================================
+// MIPS MEMORY LAYOUT
+//====================================
+MIPS programs assume the following memory layout:
+
+Region	 	Address	 		Notes
+text	 	0x00400000	 	contains only instructions; read-only; cannot expand
+data	 	0x10000000	 	data objects; readable/writeable; can be expanded
+stack	 	0x7fffefff	 	grows down from that address; readable/writeable
+k_text	 	0x80000000	 	kernel code; read-only; only accessible kernel mode
+k_data	 	0x90000000	 	kernel data; read/write; only accessible kernel mode
+
 
 
 
