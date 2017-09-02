@@ -147,6 +147,44 @@ stack	 	0x7fffefff	 	grows down from that address; readable/writeable
 k_text	 	0x80000000	 	kernel code; read-only; only accessible kernel mode
 k_data	 	0x90000000	 	kernel data; read/write; only accessible kernel mode
 
+//====================
+// ADDRESSING IN MIPS
+//====================
+Memory addresses can be referred to by:
+- Given a symbolic name / label [effectively a constant]
+- Indirectly via. a register 	[effectively pointer de-referencings]
+Example Program:
+
+LABEL   INSTRCT 	  DATA
+  a:	  lw		$t0, val 	    # address via. name
+  b:	  lw		$t0, ($s0)		# indirect addressing
+  c:	  lw		$t0, 4($s0)		# indexed addressing [4 bytes after $s0]
+
+If $s0 contains 0x10000000 and var = 0x100000008
+- Computed address for a: is 0x100000008
+- Computed address for b: is 0x100000000
+// ^reg[$s0] contains a mem address -> deref that address val -> go to that address in memory
+//      		-> grab content from there -> load that content into reg[$t0]
+- Computer address for c: is 0x100000004
+// Indirect addressing + add a constant value
+// reg[$s0] + additional 4bytes -> go to that address -> take content -> load into reg[$t0]
+
+THE REGISTERS EFFECTIVELY BEHAVE LIKE A POINTER.
+
+Address Format	  		Address Computation.
+------------------------------------------------------------
+(register)	  			address = *register = contents of register
+k	  					address = k
+k(register)	  			address = k + *register
+symbol	  				address = &symbol = address of symbol
+symbol ± k	  			address = &symbol ± k
+symbol ± k(register)  	address = &symbol ± (k + *register)
+(where k = constant value)
+
+//===================
+// MIPS INSTRUCTIONS
+//===================
+See the 'Duke University MIPS Instruction Set Quick Reference' document
 
 
 
