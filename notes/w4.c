@@ -128,7 +128,7 @@ msg:	.asciiz	"Hello, MIPS\n"	# direct inserts the str at the 1st location in the
 
 main:				# indicates start of code i.e. first user instruction to execute.
 		la $a0, msg	# load the argument string into register $a0
-		li $v0, 4	# load the system call: 4 = 'print' system call
+		li $v0, 4	# load the system call: 4 = 'print string' system call [syscall 1 prints a string]
 		syscall		# print the string / invoke the system call
 		jr $ra 		# jump function, return to caller: '__start' which is the start of the 'code/text segment'
 					#									invoke the main program. Return to the next instruction.
