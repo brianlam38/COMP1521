@@ -22,12 +22,19 @@ main_ret_save:
    .globl main
 
 main:
-   sw   $ra, main_ret_save
+   sw   $ra, main_ret_save    # store address of main_ret_save into the return register
 
 #  ... your code for main() goes here
 
-   lw   $ra, main_ret_save
-   jr   $ra           # return
+   la   $a0, msg1             # load arg msg1 into reg[$a0]
+   li   $v0, 4                # load str print instruction
+   syscall                    # print
+
+                              # scanf("%d", &n);
+                              # printf("n! = %d\n", fac(n));
+
+   lw   $ra, main_ret_save    # load the value of main_ret_save into return register
+   jr   $ra                   # jump to saved return address (start again)
 
 ### fac() function
 
