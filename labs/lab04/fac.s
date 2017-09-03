@@ -11,7 +11,9 @@ msg2:
 eol:
    .asciiz "\n"
 n:
-   .space 4
+   #.space 4    # method 1 (.space): allocate space for 4-byte int
+   .word 1    # method 2 (.word): store 1 32-bit (4-byte) quantity memory address
+
 
 ### main() function
 
@@ -29,7 +31,7 @@ main:
 #  ... your code for main() goes here
 
    # printf("n: ");
-   la   $a0, msg1             # load arg msg1 into reg[$a0]
+   la   $a0, msg1             # load address msg1 into reg[$a0]
    li   $v0, 4                # load str print instruction
    syscall                    # print
 
@@ -37,12 +39,16 @@ main:
    li   $v0, 5                # load "read int" instruction
    syscall
 
-   move $a0, $v0              # move integer input to reg[$a0]
-   li   $v0, 1                # load "print int" instruction
+   sw   $v0, n       # store input into var n
+   lw   $a0, n       # load value of n into a0
+   li   $v0, 1       # load "print instr" for integer in var n
    syscall
 
    # printf("n! = %d\n", fac(n));
    jal  fac                   # jump to fac function
+
+   # get return result
+   # print return result from fac function
 
 # ... end of code
 
