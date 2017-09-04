@@ -41,6 +41,9 @@ main:
    move $a0, $v0
 
    # ... add code to check (n >= 1)
+      # if (!(n >= 1)) print error message
+      # else proceed
+      
    # ... print an error message, if needed
    # ... and return a suitable value from main()
 

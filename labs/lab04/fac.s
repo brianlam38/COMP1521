@@ -41,14 +41,10 @@ main:
 
    sw   $v0, n       # store input into var n
    lw   $a0, n       # load value of n into a0
-   li   $v0, 1       # load "print instr" for integer in var n
    syscall
-
+   
    # printf("n! = %d\n", fac(n));
    jal  fac                   # jump to fac function
-
-   # get return result
-   # print return result from fac function
 
 # ... end of code
 
@@ -68,14 +64,22 @@ fac:
    sw   $ra, fac_ret_save
 
 #  ... your code for fac() goes here
-   #move $s0, $a0       # copy value of n into reg[$s0]
-   #li   $v0, 1
-   #syscall
-   #li   $v0, 1          # load "print int" instruction
-   #la   $a0, n          # load arg n into reg[$a0]
-   #lw   $a0, ($a0)      # load into $a0 the contents of reg[$a0]
-   #syscall
+   li   $t1, 1  # t1 = 1 fac value
+   li   $t2, 1  # t2 = 1 counter
+   lw   $t3, n  # t0 = n value
+   while:
+      bge  $t2, $t3, end_while      # while 1 <= n
+      addi $t2, $t2, 1              # t2++
+      mul  $t1, $t1, $t2            # val = val * counter
+      j    while
+   end_while:
+      sw   $t1, n       # n = t1
+      move $a0, $t1     # a0 = t1
+      li   $v0, 1       # print integer
+      syscall
 
    lw   $ra, fac_ret_save
    jr   $ra            # return ($v0)
+
+
 
