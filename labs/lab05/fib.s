@@ -44,6 +44,10 @@ main:
 
    li   $v0, 5          # scanf("%d", &n);
    syscall
+   
+   blti $v0, 1, end
+
+
    sw   $v0, n       # n = a0
    move $a0, $v0     # a0 = v0
 
@@ -98,11 +102,11 @@ return:
 
 fib:
    # prologue
-   addi $sp, $sp, -4
-   sw   $fp, ($sp)
-   move $fp, $sp
-   addi $sp, $sp, -4
-   sw   $ra, ($sp)
+   addi $sp, $sp, -4 # Alloc space for int on the stack by subtracting 4-bytes for the 32-bit int from the stack pointer
+   sw   $fp, ($sp)   # store int
+   move $fp, $sp     
+   addi $sp, $sp, -4 # Alloc space for return address $ra so f() can link back to caller
+   sw   $ra, ($sp)   # store address in ra
 
    # function body
    move $v0, $0         # v0 = 0 (the value zero - default)
