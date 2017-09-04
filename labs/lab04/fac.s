@@ -41,7 +41,6 @@ main:
 
    sw   $v0, n       # store input into var n
    lw   $a0, n       # load value of n into a0
-   #syscall
 
    # printf("n! = %d\n", fac(n));
    jal  fac                   # jump to fac function

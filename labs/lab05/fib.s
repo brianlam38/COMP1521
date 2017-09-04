@@ -51,8 +51,7 @@ main:
 if:
    li   $t0, 1          # t0 = 1
    blt  $a0, $t0, else  # if (n < 1) branch to else
-   li   $v0  0
-   j    return
+   j    return          # if (n >= 1) jump to return
 # print error message
 else:
    lw   $a0, error   # load error msg
@@ -61,7 +60,6 @@ else:
    li   $v0, 10      # exit program
    syscall
 return:
-
    # jump and link to fib() function
 
    jal  fib             # $s0 = fib(n);
@@ -100,11 +98,21 @@ return:
 
 fib:
    # prologue
-   # ... add a suitable prologue
+   addi $sp, $sp, -4
+   sw   $fp, ($sp)
+   move $fp, $sp
+   addi $sp, $sp, -4
+   sw   $ra, ($sp)
 
    # function body
-   move $v0, $0
+   move $v0, $0         # v0 = 0 (the value zero - default)
 
    # epilogue
-   # ... add a suitable epilogue
+   lw   $ra, ($sp)
+   addi $sp, $sp, 4
+   lw   $fp, ($sp)
+   addi $sp, $sp, 4
+
    jr   $ra
+
+
