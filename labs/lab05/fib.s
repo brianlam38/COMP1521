@@ -9,6 +9,8 @@ error:
    .asciiz "n must be > 0"
 eol:
    .asciiz "\n"
+n:
+   .word 1
 
    .text
 
@@ -28,7 +30,7 @@ eol:
 
    .globl main
 main:
-   # prologue
+   # prologue                             ### Can you explain prologues / epilogue
    addi $sp, $sp, -4
    sw   $fp, ($sp)
    move $fp, $sp
@@ -42,12 +44,13 @@ main:
 
    li   $v0, 5          # scanf("%d", &n);
    syscall
-   move $a0, $v0
+   sw   $v0, n       # n = a0
+   move $a0, $v0     # a0 = v0
 
-#  check if (n >= 1)
+# check if (n >= 1)
 if:
    li   $t0, 1          # t0 = 1
-   bge  $a0, $t0, else  # n >= 1
+   blt  $a0, $t0, else  # if (n < 1) branch to else
    li   $v0  0
    j    return
 # print error message
@@ -57,12 +60,7 @@ else:
    syscall
    li   $v0, 10      # exit program
    syscall
-# return value from main()
 return:
-   li   $v0, 0       # return 0
-   syscall
-
-
 
    # jump and link to fib() function
 

@@ -16,15 +16,15 @@ max:
 	sw   $ra, ($sp)
 
 	lw   $a0, list
-	bne  $a0, $0, max1	// check if $a0 = 0 or NULL
+	bne  $a0, $0, max1	# check if $a0 = 0 or NULL
 	li   $v0, -1
 
 	j     end_max
 
 max1:
-	move $s0, $a0		// use $s0 for curr
-	lw   $v0, 0($s0)	// use $v0 for max    lw sets v0 = 0($s0) = 0 + 6 = 6
-	// fall through to loop belo
+	move $s0, $a0		# use $s0 for curr
+	lw   $v0, 0($s0)	# use $v0 for max    lw sets v0 = 0($s0) = 0 + 6 = 6
+	# fall through to loop below
 
 loop:
 	beq $s0, $0, end_max

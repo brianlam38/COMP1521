@@ -41,7 +41,7 @@ main:
 
    sw   $v0, n       # store input into var n
    lw   $a0, n       # load value of n into a0
-   syscall
+   #syscall
 
    # printf("n! = %d\n", fac(n));
    jal  fac                   # jump to fac function
@@ -68,7 +68,7 @@ fac:
    li   $t2, 1  # t2 = 1 counter
    lw   $t3, n  # t0 = n value
 while:
-   bge  $t2, $t3, end_while      # 1 <= n    // WHY ISN'T THIS BLE? Isn't BGE $t2 >= $t3
+   beq  $t2, $t3, end_while      # 1 <= n    // WHY ISN'T THIS BLE? Isn't BGE $t2 >= $t3
    addi $t2, $t2, 1              # t2++
    mul  $t1, $t1, $t2            # val = val * counter
    j    while
