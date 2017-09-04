@@ -5,6 +5,10 @@ msg1:
    .asciiz "n = "
 msg2:
    .asciiz "fib(n) = "
+error:
+   .asciiz "n must be > 0"
+eol:
+   .asciiz "\n"
 
    .text
 
@@ -40,12 +44,27 @@ main:
    syscall
    move $a0, $v0
 
-   # ... add code to check (n >= 1)
-      # if (!(n >= 1)) print error message
-      # else proceed
-      
-   # ... print an error message, if needed
-   # ... and return a suitable value from main()
+#  check if (n >= 1)
+if:
+   li   $t0, 1          # t0 = 1
+   bge  $a0, $t0, else  # n >= 1
+   li   $v0  0
+   j    return
+# print error message
+else:
+   lw   $a0, error   # load error msg
+   li   $v0, 4       # print error msg
+   syscall
+   li   $v0, 10      # exit program
+   syscall
+# return value from main()
+return:
+   li   $v0, 0       # return 0
+   syscall
+
+
+
+   # jump and link to fib() function
 
    jal  fib             # $s0 = fib(n);
    nop

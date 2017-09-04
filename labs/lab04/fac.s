@@ -42,7 +42,7 @@ main:
    sw   $v0, n       # store input into var n
    lw   $a0, n       # load value of n into a0
    syscall
-   
+
    # printf("n! = %d\n", fac(n));
    jal  fac                   # jump to fac function
 
@@ -67,16 +67,16 @@ fac:
    li   $t1, 1  # t1 = 1 fac value
    li   $t2, 1  # t2 = 1 counter
    lw   $t3, n  # t0 = n value
-   while:
-      bge  $t2, $t3, end_while      # while 1 <= n
-      addi $t2, $t2, 1              # t2++
-      mul  $t1, $t1, $t2            # val = val * counter
-      j    while
-   end_while:
-      sw   $t1, n       # n = t1
-      move $a0, $t1     # a0 = t1
-      li   $v0, 1       # print integer
-      syscall
+while:
+   bge  $t2, $t3, end_while      # 1 <= n    // WHY ISN'T THIS BLE? Isn't BGE $t2 >= $t3
+   addi $t2, $t2, 1              # t2++
+   mul  $t1, $t1, $t2            # val = val * counter
+   j    while
+end_while:
+   sw   $t1, n       # n = t1
+   move $a0, $t1     # a0 = t1
+   li   $v0, 1       # print integer
+   syscall
 
    lw   $ra, fac_ret_save
    jr   $ra            # return ($v0)
