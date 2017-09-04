@@ -65,19 +65,58 @@ mflo $t1          # reg[t1] = reg[Lo]
 //============================================
 // Testing and Branhcing Instruction Examples
 //============================================
-seq  $t7,$t1,$t2   # reg[t7] = 1 if (reg[t1]==reg[t2])
+
+// Critical in implementing control structures in MIPS
+seq  $t7,$t1,$t2   # reg[t7] = 1 if (reg[t1]==reg[t2])		// (t1 cmp t2), return boolean result at t7
                    # reg[t7] = 0 otherwise (signed)
-slt  $t7,$t1,$t2   # reg[t7] = 1 if (reg[t1] < reg[t2])
+slt  $t7,$t1,$t2   # reg[t7] = 1 if (reg[t1] < reg[t2])		// (t1 < t2), return boolean result at t7
                    # reg[t7] = 0 otherwise (signed)
-slti $t7,$t1,Imm   # reg[t7] = 1 if (reg[t1] < Imm)
+slti $t7,$t1,Imm   # reg[t7] = 1 if (reg[t1] < Imm)			// (t1 < Imm) (any value), return boolean result at t7
                    # reg[t7] = 0 otherwise (signed)
 
-j    label         # PC = &label
-jr   $t4           # PC = reg[t4]
-beq  $t1,$t2,label # PC = &label if (reg[t1] == reg[t2])
-bne  $t1,$t2,label # PC = &label if (reg[t1] != reg[t2])
-bgt  $t1,$t2,label # PC = &label if (reg[t1] > reg[t2])
-bltz $t2,label     # PC = &label if (reg[t2] < 0)
-bnez $t3,label     # PC = &label if (reg[t3] != 0)
-After each branch instruction, execution continues at new PC location
+j    label         # PC = &label 		// jump to address of label
+jr   $t4           # PC = reg[t4]		// jump to address of register
+
+// Condtional branching instructions
+beq  $t1,$t2,label # PC = &label if (reg[t1] == reg[t2])	// if (t1 == t2), jump to branch address
+bne  $t1,$t2,label # PC = &label if (reg[t1] != reg[t2])	// if (t1 != t2), " " " "
+bgt  $t1,$t2,label # PC = &label if (reg[t1] > reg[t2])		// if (t1 > t2), " " " "
+bltz $t2,label     # PC = &label if (reg[t2] < 0)			// if (t2 < 0), " " " "
+bnez $t3,label     # PC = &label if (reg[t3] != 0)			// if (t3 != 0), " " " "
+// ^After each branch instruction, execution continues at new PC location
+
+// Special jump instruction
+jal label    	   e.g. main:
+							jal func   // transfer control to label/function:
+	 					func:		   // + grab address of next instruction after the jal instruction
+	 						... body
+	 						ja $ra     // + store value into $ra in label/function
+	 						...		   // after label/function executes body, jump to next instruction after jal
+
+//=================
+// MIPS Directives
+//=================
+    .text        # following instructions placed in text segment
+    .data        # following objects placed in data segment
+
+    .globl       # make symbol available globally
+
+a:  .space 18    # uchar a[18];  or  uint a[4];	 // uint a[4] = 16 bytes. Leftover 2 bytes can't be an int
+    .align 2     # align next object on 22-byte addr // .align 2 (power to 2) = 4-byte boundary.
+    												 // .align 1 = 2-byte boundary
+    												 // Explanation: the next field after .align will be aligned to a 4-byte
+i:  .word 2      # unsigned int i = 2;
+v:  .word 1,3,5  # unsigned int v[3] = {1,3,5};
+h:  .half 2,4,6  # unsigned short h[3] = {2,4,6};
+b:  .byte 1,2,3  # unsigned char b[3] = {1,2,3};
+f:  .float 3.14  # float f = 3.14;
+
+s:  .asciiz "abc"
+                 # char s[4] {'a','b','c','\0'};
+t:  .ascii "abc"
+                 # char s[3] {'a','b','c'};
+
+
+
+
 
