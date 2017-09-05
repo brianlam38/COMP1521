@@ -27,13 +27,9 @@ newBoard:
 # program data
 max_iter:
 	.word 1
-rows:
+row_num:
 	.word 1
-cols:
-	.word 1
-row_ctr:
-	.word 1
-col_ctr:
+col_num:
 	.word 1
 str_iter:
 	.asciiz "# Iterations: "
@@ -48,16 +44,11 @@ main_ret_save:
 main:
 	sw   $ra, main_ret_save
 
-# Your main program code goes here
-#
-# 1. printf("# Iterations: ");
-#		store iter string in register
-#		load print str instr
-#		syscall
-#		store newline str in register
-#		load print str instr
-#		syscall
+####################
+# Main Program Code
+####################
 
+# 1. printf("# Iterations: ");
 	la   $a0, str_iter			# print "# Iterations: "
 	li   $v0, 4
 	syscall
@@ -66,10 +57,6 @@ main:
 	syscall
 
 # 2. scanf("%d", &maxiters);
-#		load read int instr
-#		syscall
-#		store int in max_iter data
-
 	li   $v0, 5					# scan iteration input + store in data
 	syscall
 	sw   $v0, max_iter
@@ -79,40 +66,51 @@ main:
 	#syscall
 
 # 3. Pre-loop prep
-#		load row_ctr
-#		load col_ctr
-#		load max_iter counter
-#		set general row counter = 0
-	lw  $s0, row_ctr
-	lw  $s1, col_ctr
-	lw  $s2, max_iter
-	li  $v0, 0
+#	set counters, load max_iter and N values
+	li   $s0, 0					# row counter
+	li   $s1, 0					# col counter
+	li   $s2, 0					# iter counter
 
-# 4. iteration loop
-#	
-#
-#
+	sw   $s0, row_num			# keep track of row
+	sw   $s1, col_num			# keep track of col
 
-# Keeps track of iterations
-main_iter:
-	beq  $s0, $s2, end_main # check to see if row_count == 0
-	li   $s1, 0					 # set col_counter to 0 (start in the 0th col everytime)
+	lw   $s3, max_iter			# store max_iter
+	lw   $s4, N 				# store board size N
+
+# 4. loops
+
+# Keep track of iterations
+iter_loop:
+	beq  $s2, $s3, end_main 	# while (iter_ctr != max_iter)
+								#		continue
+
+# Keep track of row progression
+row_loop:
+	beq  $s0, $s4, end_iter_loop # while (row_ctr != N)
+	li   $s1, 0					 #		set col ctr = 0
+
+col_loop:
+	beq  $s1, $s4, end_row_loop # while (col_ctr != N)
+
 
 end_main:
 	lw   $ra, main_ret_save
 	jr   $ra
 
 
-# The other functions go here
+##################
+# Other Functions
+##################
 
+# End of row loops, increment iter ctr, jump to next iter
+end_row_loop:
+	addi $s2, $s2, 1
+	j    iter_loop
 
-main_iter:
-
-# Keeps track of row progression
-main_row:
-
-# Keeps track of column progression
-main_col:
+# End of column loops, increment row ctr, jump to next row
+end_col_loop:
+	addi $s0, $s0, 1
+	j 	 row_loop
 
 # Checks curr board and updates state
 board_update:
