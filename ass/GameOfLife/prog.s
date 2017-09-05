@@ -72,3 +72,18 @@ end_main:
 
 
 # The other functions go here
+
+# Keeps track of iterations
+main_iter:
+
+# Keeps track of row progression
+main_row:
+
+# Keeps track of column progression
+main_col:
+
+# Checks curr board and updates state
+board_update:
+
+
+

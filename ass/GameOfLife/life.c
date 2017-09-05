@@ -12,8 +12,8 @@ int main(void)
     printf("# Iterations: ");
     scanf("%d", &maxiters);                   // input number of iterations
     for (int n = 1; n <= maxiters; n++) {     // for each iteration
-      for (int i = 0; i < N; i++) {           //      for each col
-         for (int j = 0; j < N; j++) {        //          for each row
+      for (int i = 0; i < N; i++) {           //      for each row
+         for (int j = 0; j < N; j++) {        //          for each col
             int nn = neighbours(i,j);         //            [LIVING CELL]
             if (board[i][j] == 1) {           //            if curr cell = 1
                if (nn < 2)                    //                if neighbours < 2  (underpop: cells with nn < 2 dies)
@@ -49,7 +49,7 @@ int neighbours(int i, int j)
    return nn;
 }
 
-void copyBackAndShow()
+void copyBackAndShow()                    // Print 
 {
    for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
