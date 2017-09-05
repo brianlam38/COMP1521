@@ -47,6 +47,8 @@ eol:
 	.align 2
 main_ret_save:
 	.space 4
+board_ret_save:
+	.space 4
 
 ####################
 # Main Program Code
@@ -84,7 +86,8 @@ iter_loop:
 	beq  $s2, $s3, end_main 	# while (iter_ctr != max_iter)
 	li   $s0, 0					# 		reset row ctr
 	li   $s1, 0					# 		reset col ctr
-	li   $s5, 0
+	li   $s5, 0					#		reset array_index
+	jal  board_update			#       -> board_outer and link
 
 # Keep track of row progression
 row_loop:
@@ -98,8 +101,9 @@ col_loop:
 	# do stuff
 
 	lb   $a0, board($s5)		# 		load byte at board[t0]
-	li   $v0, 11				#		print char
-	syscall
+	sb   $a0, newBoard($s5)
+	#li   $v0, 11				#		print char
+	#syscall
 
 	addi $s5, $s5, 1 			# array_index++
 	addi $s1, $s1, 1    		# col ctr++, goto next col
@@ -127,10 +131,37 @@ end_main:
 # Other Functions
 ##################
 
-
-
-# Checks curr board and updates state
+# Updates board = newboard + print current state
 board_update:
+    sw   $ra, board_ret_save	# store return addr into board_ret_save
 
+board_outer:
+	beq  $s0, $s4, end_board_outer
+	li   $s1, 0
 
+board_inner:
+	beq  $s1, $s4, end_board_inner
+
+	lb   $a0, newBoard($s5)	# load byte at board[t0]
+	li   $v0, 11			#	print char
+	syscall
+
+	addi $s5, $s5, 1 		# array_index++
+	addi $s1, $s1, 1		# col ctr++
+	j 	 board_inner
+
+end_board_inner:
+	la   $a0, eol  			# print newline
+	li   $v0, 4
+	syscall
+
+	addi $s0, $s0, 1		# row ctr++
+	j 	 board_outer 		# -> board_outer
+
+end_board_outer:
+	li   $s0, 0					# reset row ctr
+	li   $s1, 0					# reset col ctr
+	li   $s5, 0					# reset array_index
+	lw   $ra, board_ret_save	# load board_ret_save
+	jr   $ra 					# -> return address
 
