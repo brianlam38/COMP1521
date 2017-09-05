@@ -11,17 +11,27 @@
 # board data N = 10 x 10 grid
 N:
 	.word 10  # gives board dimensions
+#board:
+#	.byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#	.byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+#	.byte 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
+#	.byte 0, 0, 1, 0, 1, 0, 0, 0, 0, 0
+#	.byte 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
+#	.byte 0, 0, 0, 0, 1, 1, 1, 0, 0, 0
+#	.byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0
+#	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+#	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
 board:
-	.byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	.byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
-	.byte 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
-	.byte 0, 0, 1, 0, 1, 0, 0, 0, 0, 0
-	.byte 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
-	.byte 0, 0, 0, 0, 1, 1, 1, 0, 0, 0
-	.byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0
-	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+	.byte '1', '0', '0', '0', '0', '0', '0', '0', '0', '0'
+	.byte '1', '1', '0', '0', '0', '0', '0', '0', '0', '0'
+	.byte '0', '0', '0', '1', '0', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
 newBoard:
 	.space 100
 
@@ -84,7 +94,7 @@ iter_loop:
 # Keep track of row progression
 row_loop:
 	beq  $s0, $s4, end_row_loop # while (row_ctr != N)
-	li   $s1, 0					# reset col ctr
+	li   $s1, 0					# 		reset col ctr
 	addi $s0, $s0, 1 			# 		row ctr++, goto next row
 
 # Keepp track of col progression + do main work
@@ -92,36 +102,36 @@ col_loop:
 	beq  $s1, $s4, end_col_loop # while (col_ctr != N)
 
 	addi $s5, $s5, 1 		# array_index++
-	sw   $s5, array_index
-	lw   $a0, array_index
-	li   $v0, 1
-	syscall					# print array_index
-	la   $a0, eol
-	li   $v0, 4
-	syscall					# print newline
+	#sw   $s5, array_index
+	#lw   $a0, array_index
+	#li   $v0, 1
+	#syscall					# print array_index
 
 	# do stuff
-	#mul  $t0, $s0, $s4			# 		t0 array pos = (row_ctr * N) + offset
-	#add  $t0, $t0, $s1
 
-	#lb   $a0, board($t0)		# 		load byte at board[t0]
-	#li   $v0, 11				#		print char
-	#syscall
+	lb   $a0, board($s5)		# 		load byte at board[t0]
+	li   $v0, 11				#		print char
+	syscall
 
 	addi $s1, $s1, 1    		# 		col ctr++, goto next col
 	j 	 col_loop
 
-# End of row loops
+# End of rows
+# iter ctr++ -> jump to next iteration
 end_row_loop:
-	j    iter_loop 		# jump to next iteration
+	addi $s2, $s2, 1
+	j    iter_loop
 
-# End of column loops, increment col ctr, jump to next row
+# End of columnsa
+# col ctr+ -> jump to next row
 end_col_loop:
-	#lw   $a0, eol 		# print newline
-	#li   $v0, 1
-	#syscall
+	la   $a0, eol
+	li   $v0, 4
+	syscall				# print newline
 	j 	 row_loop 		# jump to next row
 
+# End of main
+# return program
 end_main:
 	lw   $ra, main_ret_save
 	jr   $ra
