@@ -6,7 +6,8 @@
 #
 # Written by BRIAN LAM, August 2017
 
-   .data
+	.data
+	.align 2
 # board data N = 10 x 10 grid
 N:
 	.word 10  # gives board dimensions
@@ -27,10 +28,8 @@ newBoard:
 # program data
 max_iter:
 	.word 1
-row_num:
-	.word 1
-col_num:
-	.word 1
+array_index:
+	.word 0
 str_iter:
 	.asciiz "# Iterations: "
 eol:
@@ -47,7 +46,6 @@ main:
 ####################
 # Main Program Code
 ####################
-
 # 1. printf("# Iterations: ");
 	la   $a0, str_iter			# print "# Iterations: "
 	li   $v0, 4
@@ -70,9 +68,7 @@ main:
 	li   $s0, 0					# row counter
 	li   $s1, 0					# col counter
 	li   $s2, 0					# iter counter
-
-	sw   $s0, row_num			# keep track of row
-	sw   $s1, col_num			# keep track of col
+	li   $s5, 0	# array index
 
 	lw   $s3, max_iter			# store max_iter
 	lw   $s4, N 				# store board size N
@@ -82,16 +78,48 @@ main:
 # Keep track of iterations
 iter_loop:
 	beq  $s2, $s3, end_main 	# while (iter_ctr != max_iter)
-								#		continue
+	li   $s0, 0					# 		reset row ctr
+	li   $s1, 0					# 		reset col ctr
 
 # Keep track of row progression
 row_loop:
-	beq  $s0, $s4, end_iter_loop # while (row_ctr != N)
-	li   $s1, 0					 #		set col ctr = 0
+	beq  $s0, $s4, end_row_loop # while (row_ctr != N)
+	li   $s1, 0					# reset col ctr
+	addi $s0, $s0, 1 			# 		row ctr++, goto next row
 
+# Keepp track of col progression + do main work
 col_loop:
-	beq  $s1, $s4, end_row_loop # while (col_ctr != N)
+	beq  $s1, $s4, end_col_loop # while (col_ctr != N)
 
+	addi $s5, $s5, 1 # arrayindex++
+	sw   $s5, array_index
+	lw   $a0, array_index
+	li   $v0, 1
+	syscall
+	lw   $a0, eol
+	li   $v0, 11
+
+	# do stuff
+	#mul  $t0, $s0, $s4			# 		t0 array pos = (row_ctr * N) + offset
+	#add  $t0, $t0, $s1
+
+	#lb   $a0, board($t0)		# 		load byte at board[t0]
+	#li   $v0, 11				#		print char
+	#syscall
+
+	addi $s1, $s1, 1    		# 		col ctr++, goto next col
+	j 	 col_loop
+
+# End of row loops
+end_row_loop:
+	j    iter_loop 		# jump to next iteration
+
+# End of column loops, increment col ctr, jump to next row
+end_col_loop:
+	#lw   $a0, eol 		# print newline
+	#li   $v0, 1
+	#syscall
+	j 	 row_loop 		# jump to next row
 
 end_main:
 	lw   $ra, main_ret_save
@@ -102,22 +130,7 @@ end_main:
 # Other Functions
 ##################
 
-# End of iter loops, set row + col ctrs = 0, jump to next iteration
-end_iter_loop:
-	li $s0, 0
-	li $s1, 0
-	addi $s2, $s2, 1
-	j 	 iter_loop
 
-# End of row loops, increment row ctr, jump to next iter
-end_row_loop:
-	addi $s0, $s0, 1
-	j    iter_loop
-
-# End of column loops, increment col ctr, jump to next row
-end_col_loop:
-	addi $s1, $s1, 1
-	j 	 row_loop
 
 # Checks curr board and updates state
 board_update:
