@@ -102,14 +102,21 @@ end_main:
 # Other Functions
 ##################
 
-# End of row loops, increment iter ctr, jump to next iter
-end_row_loop:
+# End of iter loops, set row + col ctrs = 0, jump to next iteration
+end_iter_loop:
+	li $s0, 0
+	li $s1, 0
 	addi $s2, $s2, 1
+	j 	 iter_loop
+
+# End of row loops, increment row ctr, jump to next iter
+end_row_loop:
+	addi $s0, $s0, 1
 	j    iter_loop
 
-# End of column loops, increment row ctr, jump to next row
+# End of column loops, increment col ctr, jump to next row
 end_col_loop:
-	addi $s0, $s0, 1
+	addi $s1, $s1, 1
 	j 	 row_loop
 
 # Checks curr board and updates state
