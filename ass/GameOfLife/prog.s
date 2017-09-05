@@ -10,7 +10,7 @@
 	.align 2
 # board data N = 10 x 10 grid
 N:
-	.word 10  # gives board dimensions
+	.word 4  # gives board dimensions
 #board:
 #	.byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
 #	.byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
@@ -22,18 +22,12 @@ N:
 #	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
 #	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
 board:
-	.byte '1', '0', '0', '0', '0', '0', '0', '0', '0', '0'
-	.byte '1', '1', '0', '0', '0', '0', '0', '0', '0', '0'
-	.byte '0', '0', '0', '1', '0', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
-	.byte '0', '0', '1', '0', '1', '0', '0', '0', '0', '0'
+	.byte '1', '1', '1', '1'			# SMALLER SIZE BOARD
+	.byte '1', '0', '0', '1'			# EASIER FOR TESTING
+	.byte '1', '0', '0', '1'
+	.byte '1', '1', '1', '1'
 newBoard:
-	.space 100
+	.space 16
 
 # program data
 max_iter:
@@ -42,6 +36,10 @@ array_index:
 	.word 0
 str_iter:
 	.asciiz "# Iterations: "
+board_print1:
+	.asciiz "=== After iteration "
+board_print2:
+	.asciiz " ===\n"
 eol:
 	.asciiz "\n"
 	.align 2
@@ -63,9 +61,6 @@ main:
 	la   $a0, str_iter			# print "# Iterations: "
 	li   $v0, 4
 	syscall
-	la   $a0, eol				# print newline
-	li   $v0, 4
-	syscall
 
 	# Scan and store max_iter input
 	li   $v0, 5
@@ -84,26 +79,19 @@ main:
 # Keep track of iterations
 iter_loop:
 	beq  $s2, $s3, end_main 	# while (iter_ctr != max_iter)
-	li   $s0, 0					# 		reset row ctr
-	li   $s1, 0					# 		reset col ctr
-	li   $s5, 0					#		reset array_index
-	jal  board_update			#       -> board_outer and link
 
 # Keep track of row progression
 row_loop:
-	beq  $s0, $s4, end_row_loop # while (row_ctr != N)
+	beq  $s0, $s4, end_row_loop # while row < N
 	li   $s1, 0					# 		reset col ctr
 
-# Keep track of col progression + do main work
+# Keep track of col progression
 col_loop:
-	beq  $s1, $s4, end_col_loop # while (col_ctr != N)
+	beq  $s1, $s4, end_col_loop # while col < N
 
 	# do stuff
-
-	lb   $a0, board($s5)		# 		load byte at board[t0]
-	sb   $a0, newBoard($s5)
-	#li   $v0, 11				#		print char
-	#syscall
+	lb   $a0, board($s5)		# 		load cell to $reg
+	sb   $a0, newBoard($s5)		#		store cell in newBoard
 
 	addi $s5, $s5, 1 			# array_index++
 	addi $s1, $s1, 1    		# col ctr++, goto next col
@@ -112,6 +100,7 @@ col_loop:
 # End of rows
 end_row_loop:
 	addi $s2, $s2, 1 	# iter ctr++
+	jal  board_update	# -> board_outer and link
 	j    iter_loop		# -> next iteration
 
 # End of columns
@@ -119,7 +108,7 @@ end_col_loop:
 	addi $s0, $s0, 1	# row ctr++
 	la   $a0, eol
 	li   $v0, 4
-	syscall				# print newline
+	syscall			# print newline
 	j 	 row_loop 		# -> next row
 
 # End of main
@@ -127,41 +116,57 @@ end_main:
 	lw   $ra, main_ret_save
 	jr   $ra
 
-##################
-# Other Functions
-##################
+####################
+# copyBackAndShow()
+####################
 
-# Updates board = newboard + print current state
-board_update:
-    sw   $ra, board_ret_save	# store return addr into board_ret_save
-
-board_outer:
-	beq  $s0, $s4, end_board_outer
+board_update:							# update board and print current state
+    sw   $ra, board_ret_save
+    # reset counter values
+	li   $s0, 0
 	li   $s1, 0
-
-board_inner:
-	beq  $s1, $s4, end_board_inner
-
-	lb   $a0, newBoard($s5)	# load byte at board[t0]
-	li   $v0, 11			#	print char
+	li   $s5, 0
+	# print no. iterations
+	la   $a0, board_print1
+	li   $v0, 4
 	syscall
-
-	addi $s5, $s5, 1 		# array_index++
-	addi $s1, $s1, 1		# col ctr++
-	j 	 board_inner
-
-end_board_inner:
-	la   $a0, eol  			# print newline
+	move $a0, $s2
+	li   $v0, 1
+	syscall
+	la   $a0, board_print2
 	li   $v0, 4
 	syscall
 
-	addi $s0, $s0, 1		# row ctr++
-	j 	 board_outer 		# -> board_outer
+board_outer:							# board row loop, while row < N
+	beq  $s0, $s4, end_board_outer
+	li   $s1, 0
 
-end_board_outer:
-	li   $s0, 0					# reset row ctr
-	li   $s1, 0					# reset col ctr
-	li   $s5, 0					# reset array_index
-	lw   $ra, board_ret_save	# load board_ret_save
-	jr   $ra 					# -> return address
+board_inner:							# board col loop, while col < N
+	beq  $s1, $s4, end_board_inner
+	# print newBoard cell
+	lb   $a0, newBoard($s5)
+	li   $v0, 11
+	syscall
+	# increment array + col counter
+	addi $s5, $s5, 1
+	addi $s1, $s1, 1
+	j 	 board_inner
+
+end_board_inner:						# end of cols
+	# print newline
+	la   $a0, eol
+	li   $v0, 4
+	syscall
+	# jump to next row
+	addi $s0, $s0, 1
+	j 	 board_outer
+
+end_board_outer:						# end of rows
+	# reset counters
+	li   $s0, 0
+	li   $s1, 0
+	li   $s5, 0
+	# return to next iteration
+	lw   $ra, board_ret_save
+	jr   $ra
 
