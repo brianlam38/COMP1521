@@ -24,7 +24,7 @@ N:
 board:
 	.byte '1', '1', '1', '1'			# SMALLER SIZE BOARD
 	.byte '1', '0', '0', '1'			# EASIER FOR TESTING
-	.byte '1', '0', '0', '1'
+	.byte '1', '0', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
 	.byte '1', '1', '1', '1'
 newBoard:
 	.space 16
@@ -48,31 +48,27 @@ main_ret_save:
 board_ret_save:
 	.space 4
 
-####################
-# Main Program Code
-####################s
+################
+# MAIN FUNCTION
+################
 
 	.text
 	.globl main
 main:
 	sw   $ra, main_ret_save
-
 	# Print "# Iterations: "
 	la   $a0, str_iter			# print "# Iterations: "
 	li   $v0, 4
 	syscall
-
 	# Scan and store max_iter input
 	li   $v0, 5
 	syscall
 	sw   $v0, max_iter
-
 	# Set up counter and end values
 	li   $s0, 0					# row counter
 	li   $s1, 0					# col counter
 	li   $s2, 0					# iter counter
 	li   $s5, 0					# array index
-
 	lw   $s3, max_iter			# store max_iter
 	lw   $s4, N 				# store board size N
 
@@ -106,9 +102,6 @@ end_row_loop:
 # End of columns
 end_col_loop:
 	addi $s0, $s0, 1	# row ctr++
-	la   $a0, eol
-	li   $v0, 4
-	syscall			# print newline
 	j 	 row_loop 		# -> next row
 
 # End of main
