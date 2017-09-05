@@ -78,10 +78,25 @@ main:
 	#li   $v0, 1
 	#syscall
 
-# 3.
+# 3. Pre-loop prep
+#		load row_ctr
+#		load col_ctr
+#		load max_iter counter
+#		set general row counter = 0
+	lw  $s0, row_ctr
+	lw  $s1, col_ctr
+	lw  $s2, max_iter
+	li  $v0, 0
+
+# 4. iteration loop
+#	
 #
 #
-#
+
+# Keeps track of iterations
+main_iter:
+	beq  $s0, $s2, end_main # check to see if row_count == 0
+	li   $s1, 0					 # set col_counter to 0 (start in the 0th col everytime)
 
 end_main:
 	lw   $ra, main_ret_save
@@ -90,7 +105,7 @@ end_main:
 
 # The other functions go here
 
-# Keeps track of iterations
+
 main_iter:
 
 # Keeps track of row progression
