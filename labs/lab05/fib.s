@@ -52,7 +52,7 @@ main:
    move $a0, $v0     # a0 = v0
 
 # check if (n >= 1)
-if:
+n_gt_0:
    li   $t0, 1          # t0 = 1
    blt  $a0, $t0, else  # if (n < 1) branch to else
    j    return          # if (n >= 1) jump to return
