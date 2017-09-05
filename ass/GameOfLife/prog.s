@@ -91,13 +91,14 @@ row_loop:
 col_loop:
 	beq  $s1, $s4, end_col_loop # while (col_ctr != N)
 
-	addi $s5, $s5, 1 # arrayindex++
+	addi $s5, $s5, 1 		# array_index++
 	sw   $s5, array_index
 	lw   $a0, array_index
 	li   $v0, 1
-	syscall
-	lw   $a0, eol
-	li   $v0, 11
+	syscall					# print array_index
+	la   $a0, eol
+	li   $v0, 4
+	syscall					# print newline
 
 	# do stuff
 	#mul  $t0, $s0, $s4			# 		t0 array pos = (row_ctr * N) + offset
