@@ -49,21 +49,38 @@ main:
 	sw   $ra, main_ret_save
 
 # Your main program code goes here
-
-# 1. prepare starting board
-#		
 #
-# 2. printf("# Iterations: ");
+# 1. printf("# Iterations: ");
 #		store iter string in register
 #		load print str instr
 #		syscall
 #		store newline str in register
 #		load print str instr
 #		syscall
-# 3. scanf("%d", &maxiters);
+
+	la   $a0, str_iter			# print "# Iterations: "
+	li   $v0, 4
+	syscall
+	la   $a0, eol				# print newline
+	li   $v0, 4
+	syscall
+
+# 2. scanf("%d", &maxiters);
 #		load read int instr
 #		syscall
 #		store int in max_iter data
+
+	li   $v0, 5					# scan iteration input + store in data
+	syscall
+	sw   $v0, max_iter
+
+	#lw   $a0, max_iter			# << PRINT TEST >>
+	#li   $v0, 1
+	#syscall
+
+# 3.
+#
+#
 #
 
 end_main:
