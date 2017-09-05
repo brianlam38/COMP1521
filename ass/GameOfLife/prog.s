@@ -48,15 +48,16 @@ eol:
 main_ret_save:
 	.space 4
 
+####################
+# Main Program Code
+####################s
+
 	.text
 	.globl main
 main:
 	sw   $ra, main_ret_save
 
-####################
-# Main Program Code
-####################
-# 1. printf("# Iterations: ");
+	# Print "# Iterations: "
 	la   $a0, str_iter			# print "# Iterations: "
 	li   $v0, 4
 	syscall
@@ -64,26 +65,19 @@ main:
 	li   $v0, 4
 	syscall
 
-# 2. scanf("%d", &maxiters);
-	li   $v0, 5					# scan iteration input + store in data
+	# Scan and store max_iter input
+	li   $v0, 5
 	syscall
 	sw   $v0, max_iter
 
-	#lw   $a0, max_iter			# << PRINT TEST >>
-	#li   $v0, 1
-	#syscall
-
-# 3. Pre-loop prep
-#	set counters, load max_iter and N values
+	# Set up counter and end values
 	li   $s0, 0					# row counter
 	li   $s1, 0					# col counter
 	li   $s2, 0					# iter counter
-	li   $s5, 0	# array index
+	li   $s5, 0					# array index
 
 	lw   $s3, max_iter			# store max_iter
 	lw   $s4, N 				# store board size N
-
-# 4. loops
 
 # Keep track of iterations
 iter_loop:
@@ -95,17 +89,10 @@ iter_loop:
 row_loop:
 	beq  $s0, $s4, end_row_loop # while (row_ctr != N)
 	li   $s1, 0					# 		reset col ctr
-	addi $s0, $s0, 1 			# 		row ctr++, goto next row
 
-# Keepp track of col progression + do main work
+# Keep track of col progression + do main work
 col_loop:
 	beq  $s1, $s4, end_col_loop # while (col_ctr != N)
-
-	addi $s5, $s5, 1 		# array_index++
-	#sw   $s5, array_index
-	#lw   $a0, array_index
-	#li   $v0, 1
-	#syscall					# print array_index
 
 	# do stuff
 
@@ -113,25 +100,29 @@ col_loop:
 	li   $v0, 11				#		print char
 	syscall
 
-	addi $s1, $s1, 1    		# 		col ctr++, goto next col
+	addi $s5, $s5, 1 			# array_index++
+	#sw   $s5, array_index
+	#lw   $a0, array_index
+	#li   $v0, 1
+	#syscall					# print array_index
+
+	addi $s1, $s1, 1    		# col ctr++, goto next col
 	j 	 col_loop
 
 # End of rows
-# iter ctr++ -> jump to next iteration
 end_row_loop:
-	addi $s2, $s2, 1
-	j    iter_loop
+	addi $s2, $s2, 1 	# iter ctr++
+	j    iter_loop		# -> next iteration
 
-# End of columnsa
-# col ctr+ -> jump to next row
+# End of columns
 end_col_loop:
+	addi $s0, $s0, 1	# row ctr++
 	la   $a0, eol
 	li   $v0, 4
 	syscall				# print newline
-	j 	 row_loop 		# jump to next row
+	j 	 row_loop 		# -> next row
 
 # End of main
-# return program
 end_main:
 	lw   $ra, main_ret_save
 	jr   $ra
