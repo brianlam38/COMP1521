@@ -174,15 +174,12 @@ end_board_outer:						# end of rows
 
 neighbours:							# update board and print current state
     sw   $ra, neighbours_ret_save
-    # load initial vals
-    #li   $t0, -1 # x
-    #li   $t1, -1 # y
-    #add  $t2, $s0, $t0 # i+x
-    #add  $t3, $s0, $t1 # j+y
+    # set up init values
+    addi $s6, $s0, -1 # x+i
+    addi $s7, $s1, -1 # y+j
 
-    #li   $t4, -1 # const val -1
-    #lw   $t5, N  # N
-    #add  $t4, $t4, $t5 # t4 = N-1
+    #lw   $t0, N
+    #addi $t1, $t0, -1 # t1 = N-1
 
 n_outer:							# board row loop, while row < N
 	beq  $t0, $t2, end_n_outer
