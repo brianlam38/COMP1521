@@ -12,19 +12,17 @@
 N:
 	.word 4  # gives board dimensions
 #board:
-#	.byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
-#	.byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
-#	.byte 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
-#	.byte 0, 0, 1, 0, 1, 0, 0, 0, 0, 0
-#	.byte 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
-#	.byte 0, 0, 0, 0, 1, 1, 1, 0, 0, 0
-#	.byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0
-#	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-#	.byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+#	.byte '1', '1', '1', '1'			# SMALLER SIZE BOARD
+#	.byte '1', '0', '1', '1'			# EASIER FOR TESTING
+#	.byte '1', '1', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
+#	.byte '1', '1', '1', '1'
+#newBoard:
+#	.space 16
+
 board:
 	.byte '1', '1', '1', '1'			# SMALLER SIZE BOARD
-	.byte '1', '0', '0', '1'			# EASIER FOR TESTING
-	.byte '1', '0', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
+	.byte '1', '0', '1', '1'			# EASIER FOR TESTING
+	.byte '1', '1', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
 	.byte '1', '1', '1', '1'
 newBoard:
 	.space 16
@@ -42,6 +40,12 @@ board_print2:
 	.asciiz " ===\n"
 eol:
 	.asciiz "\n"
+x_nn:
+	.word -1
+y_nn:
+	.word -1
+nn:
+	.word 0
 	.align 2
 main_ret_save:
 	.space 4
@@ -175,43 +179,72 @@ end_board_outer:						# end of rows
 neighbours:							# update board and print current state
     sw   $ra, neighbours_ret_save
     # set up init values
-    addi $s6, $s0, -1 # x+i
-    addi $s7, $s1, -1 # y+j
+    lw   $s6, x_nn # x rows
+    lw   $s7, y_nn # y cols
+    #addi $s6, $s0, -1 # x+i
+    #addi $s7, $s1, -1 # y+j
 
-    #lw   $t0, N
-    #addi $t1, $t0, -1 # t1 = N-1
+    lw   $a1, N
+    addi $a1, $a1, -1 # a1 = N-1
+    li   $a2, 2 	  # const val 1
 
-n_outer:							# board row loop, while row < N
-	beq  $t0, $t2, end_n_outer
-	li   $s1, 0
+    # reset nn
+    li   $t0, 0
+    sw   $t0, nn
 
-n_inner:							# board col loop, while col < N
-	beq  $t1, $t2, end_n_inner
+n_outer:							# while (x < 2) ~= (x <= 1)
+	beq  $s6, $a2, end_n_outer
+	li   $s7, 0
 
-	# X: if out of bounds -> skip
-	#add  $t4, $t0, $s0				# i+x < 0
-	#bltz $t4, n_inner
-	#bgt  $t4, $t3, n_inner 			# i+x > N-1
-	#li   $t5, 0
+n_inner:							# while (x < 2) ~= (x <= 1)
+	beq  $s7, $a2, end_n_inner
 
-	#li   $t4, 0
-	# Y: if out of bounds -> skip
-	#add  $t3, $
+	# LHS/RHS: if out of bounds -> skip
+	add  $t0, $s6, $s0 				# t0 = i+x
+	bltz $t0, end_n_inner 			# i+x < 0
+	bgt  $t0, $a1, end_n_inner 		# i+x > N-1
 
-	# increment array s+ col counter
-	addi $t1, $t1, 1
+	# UP/DOWN: if out of bounds -> skip
+	add  $t0, $s7, $s1 				# t0 = j+y
+	bltz $t0, end_n_inner 			# j+y < 0
+	bgt  $t0, $a1, end_n_inner 		# j+y > N-1
+
+	# SAME SPOT -> skip
+	li   $t0, 0 
+	bne  $s6, $t0, check_alive	 # row != 0, check cell
+	bne  $s7, $t0, check_alive   # col != 0, check cell
+
+	# increment col
+	addi $s7, $s7, 1
 	j 	 n_inner
 
 end_n_inner:						# end of cols
 	# jump to next row
-	addi $t0, $t0, 1
+	addi $s6, $s6, 1
 	j 	 n_outer
 
 end_n_outer:						# end of rows
 	# return nn and link back
-
 	lw   $ra, neighbours_ret_save
 	jr   $ra
+
+check_alive:
+	# if board[i][j] != alive, skip
+	li   $t0, '1'
+	lb   $a0, board($s5)
+	bne  $a0, $t0, end_n_inner
+
+    lw   $a3, nn
+    addi $a3, $a3, 1
+    sw   $a3, nn
+    lw   $a0, nn
+    li   $v0, 1
+    syscall
+    la   $a0, eol
+    li   $v0, 4
+    syscall
+
+	j    end_n_inner
 
 
 
