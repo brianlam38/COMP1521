@@ -47,6 +47,8 @@ main_ret_save:
 	.space 4
 board_ret_save:
 	.space 4
+neighbours_ret_save:
+	.space 4
 
 ################
 # MAIN FUNCTION
@@ -84,6 +86,9 @@ row_loop:
 # Keep track of col progression
 col_loop:
 	beq  $s1, $s4, end_col_loop # while col < N
+
+	# neighbours
+	jal  neighbours
 
 	# do stuff
 	lb   $a0, board($s5)		# 		load cell to $reg
@@ -162,4 +167,60 @@ end_board_outer:						# end of rows
 	# return to next iteration
 	lw   $ra, board_ret_save
 	jr   $ra
+
+###############
+# neighbours()
+###############
+
+neighbours:							# update board and print current state
+    sw   $ra, neighbours_ret_save
+    # load initial vals
+    #li   $t0, -1 # x
+    #li   $t1, -1 # y
+    #add  $t2, $s0, $t0 # i+x
+    #add  $t3, $s0, $t1 # j+y
+
+    #li   $t4, -1 # const val -1
+    #lw   $t5, N  # N
+    #add  $t4, $t4, $t5 # t4 = N-1
+
+n_outer:							# board row loop, while row < N
+	beq  $t0, $t2, end_n_outer
+	li   $s1, 0
+
+n_inner:							# board col loop, while col < N
+	beq  $t1, $t2, end_n_inner
+
+	# X: if out of bounds -> skip
+	#add  $t4, $t0, $s0				# i+x < 0
+	#bltz $t4, n_inner
+	#bgt  $t4, $t3, n_inner 			# i+x > N-1
+	#li   $t5, 0
+
+	#li   $t4, 0
+	# Y: if out of bounds -> skip
+	#add  $t3, $
+
+	# increment array s+ col counter
+	addi $t1, $t1, 1
+	j 	 n_inner
+
+end_n_inner:						# end of cols
+	# jump to next row
+	addi $t0, $t0, 1
+	j 	 n_outer
+
+end_n_outer:						# end of rows
+	# return nn and link back
+
+	lw   $ra, neighbours_ret_save
+	jr   $ra
+
+
+
+#NEXT STEPS:
+#1. Add code in main() to assign newBoard values
+#2. Add code in copyBackAndShow() to parse newBoard cells -> char bytes for printing
+#2. Do print tests to make sure newBoard assignment + printing works
+#3. Create num neighbours check
 
