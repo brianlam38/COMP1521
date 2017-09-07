@@ -13,8 +13,8 @@ N:
 	.word 4
 board:
 	.byte '1', '1', '1', '1'			# SMALLER SIZE BOARD
-	.byte '1', '0', '1', '1'			# EASIER FOR TESTING
-	.byte '1', '1', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
+	.byte '1', '0', '0', '1'			# EASIER FOR TESTING
+	.byte '1', '0', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
 	.byte '1', '1', '1', '1'
 newBoard:
 	.space 16
@@ -34,7 +34,7 @@ board_print2:
 	.asciiz " ===\n"
 # neighbours data
 nn_str:
-	.asciiz "=== ARRAY  INDEX === "
+	.asciiz "index = "
 nn_cell_val:
 	.asciiz "cell value = "
 nn_num_neigh:
@@ -181,6 +181,17 @@ end_board_outer:						# end of rows
 neighbours:							# update board and print current state
     sw   $ra, neighbours_ret_save
 
+		# ------------------ PRINT ARRAY INDEX
+		la   $a0, nn_str
+		li   $v0, 4
+		syscall
+		move $a0, $s5
+		li   $v0, 1
+		syscall
+		la   $a0, eol
+		li   $v0, 4
+		syscall
+
     # set up init values
     lw   $s6, x_nn # x rows
     lw   $s7, y_nn # y cols
@@ -224,16 +235,16 @@ continue:
 	j    n_cols
 
 skip:
-	la   $a0, nn_skip
-	li   $v0, 4
-	syscall
+	#la   $a0, nn_skip
+	#li   $v0, 4
+	#syscall
 	addi $s7, $s7, 1
 	j    n_cols
 
 same:
-	la   $a0, nn_same
-	li   $v0, 4
-	syscall
+	#la   $a0, nn_same
+	#li   $v0, 4
+	#syscall
 	addi $s7, $s7, 1
 	j    n_cols
 
@@ -247,15 +258,15 @@ end_n_cols:
 end_n_rows:
 
 		# ------------------ PRINT CELL VALUE
-		la   $a0, nn_cell_val
-		li   $v0, 4
-		syscall	
-		lb   $a0, board($s5)
-		li   $v0, 11
-		syscall
-		la   $a0, eol
-		li   $v0, 4
-		syscall
+		#la   $a0, nn_cell_val
+		#li   $v0, 4
+		#syscall	
+		#lb   $a0, board($s5)
+		#li   $v0, 11
+		#syscall
+		#la   $a0, eol
+		#li   $v0, 4
+		#syscall
 
 		# ------------------ PRINT NUM NEIGHBOURS
 		la   $a0, nn_num_neigh
@@ -268,29 +279,12 @@ end_n_rows:
 	    li   $v0, 4
 	    syscall
 
-		la   $a0, eol
-		li   $v0, 4
-		syscall
-		la   $a0, eol
-		li   $v0, 4
-		syscall
-
 	# return nn and link back
 	lw   $ra, neighbours_ret_save
 	jr   $ra
 
 check_alive:
-		# ------------------ PRINT ARRAY INDEX
-		la   $a0, nn_str
-		li   $v0, 4
-		syscall
-		move $a0, $s5
-		li   $v0, 1
-		syscall
 		# ------------------ PRINT ALIVE OR DEAD CHECK
-		la   $a0, eol
-		li   $v0, 4
-		syscall
 		#la   $a0, nn_check_alive
 		#li   $v0, 4
 		#syscall
@@ -308,7 +302,6 @@ check_alive:
 		#la   $a0, eol
 		#li   $v0, 4
 		#syscall
-		#
 	add  $t2, $t2, $s7  # + y cols
 		# PRINT Y VAL
 		#move $a0, $s7
@@ -317,22 +310,17 @@ check_alive:
 		#la   $a0, eol
 		#li   $v0, 4
 		#syscall
-		#	
 	add  $t3, $s5, $t2  # + array
-
 		# print board[i+x][j+y]
 		#lb   $a0, board($t3)	
 		#li   $v0, 11
 		#syscall
-
 	lb   $t4, board($t3)
-
 	bne  $t0, $t4, continue    # if ('1' != cell_val)
-
-	# cell == 1 -> is alive, nn++
-	la   $a0, nn_alive
-	li   $v0, 4
-	syscall
+		# cell == 1 -> is alive, nn++
+		#la   $a0, nn_alive
+		#li   $v0, 4
+		#syscall
 	# increment nn++
     lw   $a3, nn
     addi $a3, $a3, 1
