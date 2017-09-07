@@ -43,6 +43,10 @@ nn_check_alive:
 	.asciiz "=== ALIVE / DEAD ===\n"
 nn_alive:
 	.asciiz " <<<  cell is alive\n"
+nn_skip:
+	.asciiz "!!! OUT OF BOUNDS - SKIP !!!\n"
+nn_same:
+	.asciiz "!!! SAME  CELL  -  SKIP  !!!\n"
 x_nn:
 	.word -1
 y_nn:
@@ -180,98 +184,116 @@ neighbours:							# update board and print current state
     # set up init values
     lw   $s6, x_nn # x rows
     lw   $s7, y_nn # y cols
+
     lw   $a1, N
     addi $a1, $a1, -1 # a1 = N-1
+
     li   $a2, 2 	  # const val 1
+
     # reset nn
     li   $t0, 0
     sw   $t0, nn
 
 n_rows:							# loop LEFT <-> RIGHT
 	beq  $s6, $a2, end_n_rows
-	li   $s7, 0
 
 n_cols:							# loop UP <-> DOWN, perform checks
 	beq  $s7, $a2, end_n_cols
 
 	# LHS/RHS: if out of bounds -> skip
-	add  $t0, $s6, $s0 				# t0 = i+x
-	bltz $t0, continue  			# i+x < 0
-	bgt  $t0, $a1, continue 		# i+x > N-1
+	li   $t0, 0
+	add  $t0, $s0, $s6 			# t0 = s0(i) + s6(x)
+	bltz $t0, skip  			# i+x < 0
+	bgt  $t0, $a1, skip 		# i+x > N-1
 
 	# UP/DOWN: if out of bounds -> skip
-	add  $t0, $s7, $s1 				# t0 = j+y
-	bltz $t0, continue 				# j+y < 0
-	bgt  $t0, $a1, continue 		# j+y > N-1
+	li   $t0, 0
+	add  $t0, $s1, $s7 			# t0 = s1(j) + s7(y)
+	bltz $t0, skip 				# j+y < 0
+	bgt  $t0, $a1, skip 		# j+y > N-1
 
 	# SAME SPOT -> skip
-	li   $t0, 0 
+	li   $t0, 0
 	bne  $s6, $t0, check_alive	 # row != 0, check cell
 	bne  $s7, $t0, check_alive   # col != 0, check cell
-
-	# next iteration
-	j    continue
+	j    same
 
 # Continue to next cell
 continue:
 	addi $s7, $s7, 1
 	j    n_cols
 
+skip:
+	la   $a0, nn_skip
+	li   $v0, 4
+	syscall
+	addi $s7, $s7, 1
+	j    n_cols
+
+same:
+	la   $a0, nn_same
+	li   $v0, 4
+	syscall
+	addi $s7, $s7, 1
+	j    n_cols
+
 # Jump to next row
 end_n_cols:
-	addi $s6, $s6, 1
+	addi $s6, $s6, 1	# row ctr++
+	li   $s7, -1 		# reset col ctr
 	j 	 n_rows
 
 # End of all neighbours check
 end_n_rows:
 
-	# ------------------ PRINT CELL VALUE
-	la   $a0, nn_cell_val
-	li   $v0, 4
-	syscall	
-	lb   $a0, board($s5)
-	li   $v0, 11
-	syscall
-	la   $a0, eol
-	li   $v0, 4
-	syscall
+		# ------------------ PRINT CELL VALUE
+		la   $a0, nn_cell_val
+		li   $v0, 4
+		syscall	
+		lb   $a0, board($s5)
+		li   $v0, 11
+		syscall
+		la   $a0, eol
+		li   $v0, 4
+		syscall
 
-	# ------------------ PRINT NUM NEIGHBOURS
-	la   $a0, nn_num_neigh
-	li   $v0, 4
-	syscall	
-    lw   $a0, nn
-    li   $v0, 1
-    syscall
-    la   $a0, eol
-    li   $v0, 4
-    syscall
+		# ------------------ PRINT NUM NEIGHBOURS
+		la   $a0, nn_num_neigh
+		li   $v0, 4
+		syscall	
+	    lw   $a0, nn
+	    li   $v0, 1
+	    syscall
+	    la   $a0, eol
+	    li   $v0, 4
+	    syscall
+
+		la   $a0, eol
+		li   $v0, 4
+		syscall
+		la   $a0, eol
+		li   $v0, 4
+		syscall
 
 	# return nn and link back
 	lw   $ra, neighbours_ret_save
 	jr   $ra
 
 check_alive:
-	# ------------------ PRINT ARRAY INDEX
-	la   $a0, eol
-	li   $v0, 4
-	syscall
-	la   $a0, eol
-	li   $v0, 4
-	syscall
-	la   $a0, nn_str
-	li   $v0, 4
-	syscall
-	move $a0, $s5
-	li   $v0, 1
-	syscall
-	# ------------------ PRINT ALIVE OR DEAD CHECK
-	la   $a0, eol
-	li   $v0, 4
-	syscall
-	la   $a0, nn_check_alive
-	li   $v0, 4
-	syscall
+		# ------------------ PRINT ARRAY INDEX
+		la   $a0, nn_str
+		li   $v0, 4
+		syscall
+		move $a0, $s5
+		li   $v0, 1
+		syscall
+		# ------------------ PRINT ALIVE OR DEAD CHECK
+		la   $a0, eol
+		li   $v0, 4
+		syscall
+		#la   $a0, nn_check_alive
+		#li   $v0, 4
+		#syscall
 
 	# cell != 1 -> is dead, skip
 	li   $t0, '1'
@@ -279,23 +301,39 @@ check_alive:
 	# cell pos = array + (x_rows * N) + (y cols)
 	lw   $t1, N
 	mul  $t2, $s6, $t1  # x_rows * N
+		# PRINT X VAL 								# SIDES ARE NOT BEING CHECKED !!! y -1
+		#move $a0, $s6
+		#li   $v0, 1
+		#syscall
+		#la   $a0, eol
+		#li   $v0, 4
+		#syscall
+		#
+	add  $t2, $t2, $s7  # + y cols
+		# PRINT Y VAL
+		#move $a0, $s7
+		#li   $v0, 1
+		#syscall
+		#la   $a0, eol
+		#li   $v0, 4
+		#syscall
+		#	
 	add  $t3, $s5, $t2  # + array
-	add  $t3, $t3, $s7  # + y cols
 
-	# print board[i+x][j+y]
-	lb   $a0, board($t3)	
-	li   $v0, 11
-	syscall
+		# print board[i+x][j+y]
+		#lb   $a0, board($t3)	
+		#li   $v0, 11
+		#syscall
 
-	bne  $a0, $t0, continue
+	lb   $t4, board($t3)
+
+	bne  $t0, $t4, continue    # if ('1' != cell_val)
 
 	# cell == 1 -> is alive, nn++
 	la   $a0, nn_alive
 	li   $v0, 4
 	syscall
-
 	# increment nn++
-	li   $a3, 0
     lw   $a3, nn
     addi $a3, $a3, 1
     sw   $a3, nn
