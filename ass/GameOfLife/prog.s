@@ -12,10 +12,10 @@
 N:
 	.word 4
 board:
-	.byte '1', '1', '1', '1'			# SMALLER SIZE BOARD
-	.byte '1', '0', '0', '1'			# EASIER FOR TESTING
-	.byte '1', '0', '0', '1'			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
-	.byte '1', '1', '1', '1'
+	.byte 1, 1, 1, 1			# SMALLER SIZE BOARD
+	.byte 1, 0, 0, 1			# EASIER FOR TESTING
+	.byte 1, 0, 0, 1			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
+	.byte 1, 1, 1, 1
 newBoard:
 	.space 16
 # main data
@@ -27,12 +27,20 @@ str_iter:
 	.asciiz "# Iterations: "
 eol:
 	.asciiz "\n"
-# board data
+# show board data
 board_print1:
 	.asciiz "=== After iteration "
 board_print2:
 	.asciiz " ===\n"
+alive:
+	.asciiz "#"
+dead:
+	.asciiz "."
 # neighbours data
+byte:
+	.byte 1
+byte_0:
+	.byte 0
 nn_str:
 	.asciiz "index = "
 nn_cell_val:
@@ -97,20 +105,45 @@ col_loop:							# while col < N, perform game
 	beq  $s1, $s4, end_col_loop
 	# count neighbours
 	jal  neighbours
-	# do stuff
-	lb   $a0, board($s5)		# load cell to $reg
-	sb   $a0, newBoard($s5)		# store cell in newBoard
-	# next col, array++
+	# NOW WE HAVE NN VALUE
+	lb   $a0, board($s5)		# $a0 = board_cell
+	lb   $t0, byte				# $t0 = 1
+	beq  $a0, $t0, living       # if (board_cell == 1) -> goto living
+not_living:
+	li   $t0, 3
+	lw   $t1, nn
+	beq  $t1, $t0, reproduce  # if (nn == 3) -> reproduce
+	j    kill
+# curr cell alive
+living:
+	li   $t0, 2
+	lw   $t1, nn
+	blt  $t1, $t0, kill
+	beq  $t1, $t0, reproduce
+	beq  $t1, $t0, reproduce
+	j    kill
+# if (nn == 2 || nn == 3) -> reproduce
+reproduce:
+	lb   $t0, byte
+	sb   $t0, newBoard($s5)
+	j    continue_loop
+# if (nn < 2 || nn > 3) -> kill
+kill:
+	lb   $t0, byte_0
+	sb   $t0, newBoard($s5)
+	j 	 continue_loop
+# continue to next cell
+continue_loop:
 	addi $s5, $s5, 1
 	addi $s1, $s1, 1
 	j 	 col_loop
 
-end_row_loop:					# update board, goto next iteration
-	addi $s2, $s2, 1 	# iter ctr++
-	jal  board_update	# -> board_outer and link
+# iteration complete
+end_row_loop:
+	addi $s2, $s2, 1
+	jal  board_update	# -> show board
 	j    iter_loop		# -> next iteration
-
-# End of columns
+# end of columns
 end_col_loop:
 	addi $s0, $s0, 1	# row ctr++
 	j 	 row_loop 		# -> next row
@@ -140,17 +173,29 @@ board_update:							# update board and print current state
 	la   $a0, board_print2
 	li   $v0, 4
 	syscall
-
-board_outer:							# board row loop, while row < N
+# for row < N
+board_outer:
 	beq  $s0, $s4, end_board_outer
 	li   $s1, 0
-
-board_inner:							# board col loop, while col < N
+# for col < N
+board_inner:
 	beq  $s1, $s4, end_board_inner
-	# print newBoard cell
-	lb   $a0, newBoard($s5)
+	# print newBoard cell 						# THIS NEEDS FIXING
+	lb   $a0, newBoard($s5)						# ASSIGN BOARD_CELL = NEWBOARD_CELL
+	lb   $t0, byte
+	beq  $a0, $t0, print_alive
+# putchar '.' byte
+print_dead:
+	lb   $a0, dead
 	li   $v0, 11
 	syscall
+	j    board_continue
+# putchar '#' byte
+print_alive:
+	lb   $a0, alive
+	li   $v0, 11
+	syscall
+board_continue:
 	# increment array + col counter
 	addi $s5, $s5, 1
 	addi $s1, $s1, 1
@@ -178,7 +223,8 @@ end_board_outer:						# end of rows
 # neighbours()
 ###############
 
-neighbours:							# update board and print current state
+# check surrounding cells for neighbours, then return nn.
+neighbours:
     sw   $ra, neighbours_ret_save
 
 		# ------------------ PRINT ARRAY INDEX
@@ -192,44 +238,39 @@ neighbours:							# update board and print current state
 		li   $v0, 4
 		syscall
 
-    # set up init values
-    lw   $s6, x_nn # x rows
-    lw   $s7, y_nn # y cols
-
+    # x rows / y cols
+    lw   $s6, x_nn
+    lw   $s7, y_nn
+    # N-1
     lw   $a1, N
-    addi $a1, $a1, -1 # a1 = N-1
-
-    li   $a2, 2 	  # const val 1
-
+    addi $a1, $a1, -1
+    # stop val = 2
+    li   $a2, 2
     # reset nn
     li   $t0, 0
     sw   $t0, nn
-
-n_rows:							# loop LEFT <-> RIGHT
+# loop LEFT <-> RIGHT
+n_rows:
 	beq  $s6, $a2, end_n_rows
-
-n_cols:							# loop UP <-> DOWN, perform checks
+# loop UP <-> DOWN, perform boundary checks
+n_cols:
 	beq  $s7, $a2, end_n_cols
-
 	# LHS/RHS: if out of bounds -> skip
 	li   $t0, 0
 	add  $t0, $s0, $s6 			# t0 = s0(i) + s6(x)
 	bltz $t0, skip  			# i+x < 0
 	bgt  $t0, $a1, skip 		# i+x > N-1
-
 	# UP/DOWN: if out of bounds -> skip
 	li   $t0, 0
 	add  $t0, $s1, $s7 			# t0 = s1(j) + s7(y)
 	bltz $t0, skip 				# j+y < 0
 	bgt  $t0, $a1, skip 		# j+y > N-1
-
 	# SAME SPOT -> skip
 	li   $t0, 0
 	bne  $s6, $t0, check_alive	 # row != 0, check cell
 	bne  $s7, $t0, check_alive   # col != 0, check cell
 	j    same
-
-# Continue to next cell
+# continue to next cell
 continue:
 	addi $s7, $s7, 1
 	j    n_cols
@@ -290,12 +331,12 @@ check_alive:
 		#syscall
 
 	# cell != 1 -> is dead, skip
-	li   $t0, '1'
+	lb   $t0, byte
 
 	# cell pos = array + (x_rows * N) + (y cols)
 	lw   $t1, N
 	mul  $t2, $s6, $t1  # x_rows * N
-		# PRINT X VAL 								# SIDES ARE NOT BEING CHECKED !!! y -1
+		# PRINT X VAL
 		#move $a0, $s6
 		#li   $v0, 1
 		#syscall
