@@ -9,15 +9,35 @@
 	.data
 	.align 2
 # test board data
-N:
-	.word 4
+#N:
+#	.word 4
+#board:
+#	.byte 1, 0, 1, 0			# SMALLER SIZE BOARD
+#	.byte 0, 1, 0, 1			# EASIER FOR TESTING
+#	.byte 1, 0, 1, 0			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
+#	.byte 0, 1, 0, 1
+#newBoard:
+#	.space 16
+
+# board.s ... Game of Life on a 10x10 grid
+ 
+#   .data
+ 
+N: .word 10  # gives board dimensions
+ 
 board:
-	.byte 1, 1, 1, 1			# SMALLER SIZE BOARD
-	.byte 1, 0, 0, 1			# EASIER FOR TESTING
-	.byte 1, 0, 0, 1			# REMEMBER TO CHANGE LABEL 'N' TO MATCH #ROWS/#COLS
-	.byte 1, 1, 1, 1
-newBoard:
-	.space 16
+   .byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   .byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+   .byte 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
+   .byte 0, 0, 1, 0, 1, 0, 0, 0, 0, 0
+   .byte 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
+   .byte 0, 0, 0, 0, 1, 1, 1, 0, 0, 0
+   .byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0
+   .byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+   .byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+   .byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+ 
+newBoard: .space 100	
 # main data
 max_iter:
 	.word 1
@@ -55,6 +75,10 @@ nn_skip:
 	.asciiz "!!! OUT OF BOUNDS - SKIP !!!\n"
 nn_same:
 	.asciiz "!!! SAME  CELL  -  SKIP  !!!\n"
+birth:
+	.asciiz "reproducing\n"
+death:
+	.asciiz "killing\n"
 x_nn:
 	.word -1
 y_nn:
@@ -109,6 +133,8 @@ col_loop:							# while col < N, perform game
 	lb   $a0, board($s5)		# $a0 = board_cell
 	lb   $t0, byte				# $t0 = 1
 	beq  $a0, $t0, living       # if (board_cell == 1) -> goto living
+	j    not_living
+# curr cell dead
 not_living:
 	li   $t0, 3
 	lw   $t1, nn
@@ -120,15 +146,22 @@ living:
 	lw   $t1, nn
 	blt  $t1, $t0, kill
 	beq  $t1, $t0, reproduce
+	li   $t0, 3
 	beq  $t1, $t0, reproduce
 	j    kill
 # if (nn == 2 || nn == 3) -> reproduce
 reproduce:
+	la   $a0, birth
+	li   $v0, 4
+	syscall
 	lb   $t0, byte
 	sb   $t0, newBoard($s5)
 	j    continue_loop
 # if (nn < 2 || nn > 3) -> kill
 kill:
+	la   $a0, death
+	li   $v0, 4
+	syscall
 	lb   $t0, byte_0
 	sb   $t0, newBoard($s5)
 	j 	 continue_loop
@@ -182,6 +215,7 @@ board_inner:
 	beq  $s1, $s4, end_board_inner
 	# print newBoard cell 						# THIS NEEDS FIXING
 	lb   $a0, newBoard($s5)						# ASSIGN BOARD_CELL = NEWBOARD_CELL
+	sb   $a0, board($s5)
 	lb   $t0, byte
 	beq  $a0, $t0, print_alive
 # putchar '.' byte
@@ -228,15 +262,15 @@ neighbours:
     sw   $ra, neighbours_ret_save
 
 		# ------------------ PRINT ARRAY INDEX
-		la   $a0, nn_str
-		li   $v0, 4
-		syscall
-		move $a0, $s5
-		li   $v0, 1
-		syscall
-		la   $a0, eol
-		li   $v0, 4
-		syscall
+		#la   $a0, nn_str
+		#li   $v0, 4
+		#syscall
+		#move $a0, $s5
+		#li   $v0, 1
+		#syscall
+		#la   $a0, eol
+		#li   $v0, 4
+		#syscall
 
     # x rows / y cols
     lw   $s6, x_nn
@@ -310,15 +344,15 @@ end_n_rows:
 		#syscall
 
 		# ------------------ PRINT NUM NEIGHBOURS
-		la   $a0, nn_num_neigh
-		li   $v0, 4
-		syscall	
-	    lw   $a0, nn
-	    li   $v0, 1
-	    syscall
-	    la   $a0, eol
-	    li   $v0, 4
-	    syscall
+		#la   $a0, nn_num_neigh
+		#li   $v0, 4
+		#syscall	
+	    #lw   $a0, nn
+	    #li   $v0, 1
+	    #syscall
+	    #la   $a0, eol
+	    #li   $v0, 4
+	    #syscall
 
 	# return nn and link back
 	lw   $ra, neighbours_ret_save
