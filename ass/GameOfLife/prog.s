@@ -8,24 +8,6 @@
 
 	.data
 	.align 2
- 
-N:
-	.word 10  # gives board dimensions
- 
-board:
-	.byte 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	.byte 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
-   .byte 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
-   .byte 0, 0, 1, 0, 1, 0, 0, 0, 0, 0
-   .byte 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
-   .byte 0, 0, 0, 0, 1, 1, 1, 0, 0, 0
-   .byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0
-   .byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-   .byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-   .byte 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
- 
-newBoard: .space 100
-
 ### Main data
 max_iter:
 	.word 1
