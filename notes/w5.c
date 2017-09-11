@@ -1,7 +1,7 @@
 /* WEEK 5 NOTES - MIPS CONTINUED
  *
  * Brian Lam
- */
+ */	
 
 //=======================
 // MIPS Syntax Semantics
@@ -104,7 +104,7 @@ jal label    	   e.g. main:
 a:  .space 18    # uchar a[18];  or  uint a[4];	 // uint a[4] = 16 bytes. Leftover 2 bytes can't be an int
     .align 2     # align next object on 22-byte addr // .align 2 (power to 2) = 4-byte boundary.
     												 // .align 1 = 2-byte boundary
-    												 // Explanation: the next field after .align will be aligned to a 4-byte
+    												 // Explanation: the next field after .align 2 will be aligned to a 4
 i:  .word 2      # unsigned int i = 2;
 v:  .word 1,3,5  # unsigned int v[3] = {1,3,5};
 h:  .half 2,4,6  # unsigned short h[3] = {2,4,6};
