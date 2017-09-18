@@ -112,22 +112,48 @@ char *rwxmode(mode_t mode, char *str)
     printf("group = %o\n", group);
     printf("other = %o\n", other);
 
-    char rwx = "rwxrwxrwx"
+    int o_r = 1;
+    int o_w = 2;
+    int o_x = 3;
+    int g_r = 4;
+    int g_w = 5;
+    int g_x = 6;
+    int ot_r = 7;
+    int ot_w = 8;
+    int ot_x = 9;
 
-    if (owner == 1) str[3] = 'x';
-    if (owner == 2) str[2] = 'w';
-    if (owner == 3) { str[2] = 'w'; str[3] = 'x'; }
-    if (owner == 4) str[3] = 'r'
-    if (owner == 5) { str[3] = 'r'; str[5] = 'x'; }
-    if (owner == 6) { str[3] = 'r'; str[4] = 'w';}
-
-    unsigned rwx = owner;
-    for (int i = 1; i < 10; i++) {
-        if (rwx == 1)
-        if (owner == 1) str[3] = 'x';
-        if (owner == 2) str{}
-        if (i > )
+    char string[10];
+    unsigned main;
+    main = owner;
+    int m_r = o_r;
+    int m_w = o_w;
+    int m_x = o_x;
+    unsigned lol = main & 4;
+    printf("lol = %o", lol);
+    for (int i = 0; i < 3; i++) {
+        if ((main & 1) == 1) string[m_x] = 'x';
+        if ((main & 2) == 2) string[m_w] = 'w';
+        if ((main & 3) == 3) { string[m_w] = 'w'; string[m_x] = 'x'; }
+        if ((main & 4) == 4) string[m_r] = 'r';
+        if ((main & 5) == 5) { string[m_r] = 'r'; string[m_x] = 'x'; }
+        if ((main & 6) == 6) { string[m_r] = 'r'; string[m_w] = 'w';}
+        if (i == 1) {
+            main = group;
+            m_r = g_r;
+            m_w = g_w;
+            m_x = g_x;
+        }
+        if (i == 2) {
+            main = other;
+            m_r = ot_r;
+            m_w = ot_w;
+            m_x = ot_x;           
+        }
     }
+
+    printf("RWX = %s\n", string);
+
+
 
 //----------  0000    no permissions
 //-rwx------  0700    read, write, & execute only for owner
