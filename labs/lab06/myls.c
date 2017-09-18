@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
       lstat(entry->d_name, &info);
 
       rwxmode(info.st_mode, mode);
-      printf("MODE = %u\n", info.st_mode);         // grab mode / type
+      //printf("MODE = %s\n", mode);         // grab mode / type
 
       username(info.st_uid, uname);                // grab name of owner
       printf("UNAME = [%s]\n", uname);
@@ -77,14 +77,17 @@ int main(int argc, char *argv[])
 
 // convert octal mode to -rwxrwxrwx string
 char *rwxmode(mode_t mode, char *str)
-{
-    printf("MODE = %hu", mode);
-    return NULL;
-    if (mode == S_IFDIR) {
+{   
+
+    printf("OCTAL MODE = %o\n", mode);
+
+    // Bitwise & operations to determine file type
+    // S_IFMT = octal code for "Type of file"
+    if ((mode & S_IFMT) == S_IFDIR) {
         printf("directory\n");
-    } else if (mode == S_IFREG) {
+    } else if ((mode & S_IFMT) == S_IFREG) {
         printf("regular file\n");
-    } else if (mode == S_IFLNK) {
+    } else if ((mode & S_IFMT) == S_IFLNK) {
         printf("symbolic link\n");
     } else {
         printf("OTHER\n");
@@ -101,6 +104,7 @@ char *rwxmode(mode_t mode, char *str)
      //#define        S_IFLNK  0120000  /* symbolic link */
      //#define        S_IFSOCK 0140000  /* socket */
      //#define        S_IFWHT  0160000  /* whiteout */
+    return str;
 }
 
 // convert user id to user name
