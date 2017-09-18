@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
       if (strcmp(entry->d_name,".") == 0) continue;
       lstat(entry->d_name, &info);
 
-      rwxmode(info.st_mode, mode);
-      //printf("MODE = %s\n", mode);         // grab mode / type
+      rwxmode(info.st_mode, mode);              // grab mode / type
+      printf("MODE = %s\n", mode);         
 
       username(info.st_uid, uname);                // grab name of owner
       printf("UNAME = [%s]\n", uname);
@@ -83,15 +83,64 @@ char *rwxmode(mode_t mode, char *str)
 
     // Bitwise & operations to determine file type
     // S_IFMT = octal code for "Type of file"
-    if ((mode & S_IFMT) == S_IFDIR) {
+
+    // mode & IFMT -> remove lower bits to determine file type
+    if ((mode & S_IFMT) == S_IFDIR) {            
+        str[0] = 'd';
         printf("directory\n");
     } else if ((mode & S_IFMT) == S_IFREG) {
+        str[0] = '-';
         printf("regular file\n");
     } else if ((mode & S_IFMT) == S_IFLNK) {
+        str[0] = '1';
         printf("symbolic link\n");
     } else {
+        str[0] = '?';
         printf("OTHER\n");
     }
+
+    // Mask mode code with 0x1FF (0b111111111) to cut out last 3 octal permission digits
+    unsigned mask = 0x1FF;
+    unsigned bits = mode & mask;
+    printf("%o\n", bits); 
+
+    // bits & mask, then bitshift 3 positions to remove extra 0's
+    unsigned owner = bits & 0x07;           // 0b111
+    unsigned group = (bits & 0x38) >> 3;    // 0b111111
+    unsigned other = (bits & 0x1C0) >> 6;   // 0b111111111
+    printf("owner = %o\n", owner);
+    printf("group = %o\n", group);
+    printf("other = %o\n", other);
+
+    char rwx = "rwxrwxrwx"
+
+    if (owner == 1) str[3] = 'x';
+    if (owner == 2) str[2] = 'w';
+    if (owner == 3) { str[2] = 'w'; str[3] = 'x'; }
+    if (owner == 4) str[3] = 'r'
+    if (owner == 5) { str[3] = 'r'; str[5] = 'x'; }
+    if (owner == 6) { str[3] = 'r'; str[4] = 'w';}
+
+    unsigned rwx = owner;
+    for (int i = 1; i < 10; i++) {
+        if (rwx == 1)
+        if (owner == 1) str[3] = 'x';
+        if (owner == 2) str{}
+        if (i > )
+    }
+
+//----------  0000    no permissions
+//-rwx------  0700    read, write, & execute only for owner
+//-rwxrwx---  0770    read, write, & execute for owner and group
+//-rwxrwxrwx  0777    read, write, & execute for owner, group and others SECURITY RISK
+//---x--x--x  0111    execute
+//--w--w--w-  0222    write
+//--wx-wx-wx  0333    write & execute
+//-r--r--r--  0444    read
+//-r-xr-xr-x  0555    read & execute
+//-rw-rw-rw-  0666    read & write
+//-rwxr-----  0740
+
 
     // print correct filename + read/write privileges
 
