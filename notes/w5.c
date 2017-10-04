@@ -60,7 +60,7 @@ div  $t5,$t6      # Lo = reg[t5] / reg[t6] (integer quotient)
                   # Hi = reg[t5] % reg[t6] (remainder)
 mfhi $t0          # reg[t0] = reg[Hi]
 mflo $t1          # reg[t1] = reg[Lo]
-                  # used to get result of MULT or DIV
+                  # used to get result of MULT or div
 
 //============================================
 // Testing and Branhcing Instruction Examples
