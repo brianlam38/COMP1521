@@ -1,5 +1,9 @@
 // WEEK 7 NOTES
 
+// 1. C PRE-PROCESsSOR
+// 2. MIPS: MAPPING CONTROL STRUCTURES
+// 3. FILE SYSTEM FUNCTIONS
+
 /*
  * C Pre-Processor
  */
@@ -170,6 +174,8 @@ Example:
 3. result:
    offset = 0 | current = 1535  | file size = 1536
 
+-----------------------
+
 // Writing and Printing file records
 Files of records can be produced by either:
 1. write()ing chunks of bytes from struct objs
@@ -197,6 +203,86 @@ Example of write()ing records vs printf()ing records:
          fscanf(inf, "%d:[^:]:%f\n", // maybe?
                      &(stu.id), &(stu.name), &(stu.wam));
 
+-----------------------
+
+Continuation of common file system operations:
+
+off_t lseek(int FileDesc, off_t Offset, int Whence)
+   Set the curr position of the FileDesc
+   Offset is in units of bytes and can be neg
+   Whence can be:
+      SEEK_SET - 'set file pos to Offset from start of file'
+      SEEK_CUR - 'set file pos to Offset from curr position'
+      SEEK_END - 'set file pos to Offset from end of life'
+   Seeking beyond eof leaves a gap which reads as 0 s
+   Seeking back beyond start of file sets pos = start of file
+
+int stat(char *FileName, struct stat *statBuf)
+   Stores metadata associated with FileName into StatBuf
+   Info includes:
+      inode number , file type + access mode , owner , group
+      size in bytes , storage block size , allocated blocks
+      time of fast/access
+   return -1 if metadata is !useful
+
+int fstat(int FileDescr, struct stat *StatBuf)
+   Same as stat() but gets data via. an open file descriptor
+
+int stat(char * FileName, struct stat *Statbuf)
+   Same as stat() but doesnt follow symbolic links
+
+-----------------------
+
+The File System links allow multiple paths to access the same data.
+1. HARD LINKS
+   -> multiple directory entries referencing the same inode
+   -> the two entries must be on the same filesystem
+2. SYMBOLIC LINKS (SYMLINK)
+   -> A file containing the path name of another file
+   -> Opening the symlink opens the file being referenced.
+
+-----------------------
+
+Continuation of common file system operations:
+
+int mkdir(char *PathName, mode_t Mode)
+   create a new dir called PathName with mode mode
+   if PathName is a/b/c/d
+   must not be readable by the writer
+
+   usage: mkdir("newDir", 0755)
+
+int fsync(int FileDesc)
+   Ensure that data associated with FileDesc is written to storage
+   Linux usually makes heavy use of buffering:
+      -> Data written to a file is eventually stored in memory buffers
+      -> Eventually, it makes its way onto permanent storage device
+   fsync() forces this to happen NOW
+   Writing to permanent storage is an expensive operation.
+
+int mount(char *Source, char *Target, char *FileSysType, unsigned long Flags, void *data)
+   File systems normally exist on permanent storage devices
+   Mount attaches a file system to a specific location in the file hierarchy.
+   *Source = storage device e.g. '/dev/disk'
+      -> Contains a file system: inode table, data chunks
+   *Target 'aka mount point' = path in the file hierarchy
+   *FileSysType = specifies a particular layout / drivers
+   *Flags = specify various properties of the filesys e.g. 'read only'
+
+USAGE: mount("/dev/disk5", "/usr", "ext3", MS_RDONLY, ...)
+
+// FILE SYSTEMS SUMMARY
+
+Operating systems provide a file system:
+   -> As an 'abstraction over physical storage' devices e.g. DISKS
+   -> Provide 'named access' to chunks of related data i.e. FileSysType
+   -> Providing 'sequential / random' access to contents of files
+   -> Allowing files to be 'arranged in a hierarchy of directories'
+   -> Provides control over 'access / permissions' to files and directories
+   -> Managing other metadata associated with files 'size, location etc...'
+
+Operating systems also manage:
+   -> Memory, processes, processor time, i/o devices, networking etc.
 
 
 
