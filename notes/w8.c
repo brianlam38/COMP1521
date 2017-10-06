@@ -165,7 +165,55 @@ Address processToPhysical(pid, addr)
 
 Search could be improved by using hashing:
 
+  'HASH TABLE'		      'PAGE TABLE'							'MEMORY'
+  key     val		0 [ P1 ][ u+m ][ 35 ]
+(p4,20) [  1  ]		1 [ P4 ][  u  ][ 20 ]		 0 [ in use by process 1 ,   modified   ]
+(p7, 0)	[ nP-2]  	2 [ -- ][  -- ][ -- ]		 1 [ in use by process 4 , not modified ]
+(p1,35) [  0  ]				......								......
+(p4,19) [ nP-1]		nP-2 [ P1 ][  u  ][ 35 ]						......
+					nP-1 [ P4 ][ u+m ][ 20 ]  nP-1 [ in use by process 4 ,   modified   ]
 
+					'u' = used
+					'm' = modified
+
+typedef struct { int pid, char status, int pageno } PageData;
+PageData PageTable[nP];  // one entry for each physical page
+int HashTable[>nP];  // at least as many entries as PageTable
+
+Address processToPhysical(pid, addr)
+{
+   int pageno = addr / PageSize;
+   int offset = addr % PageSize;
+   int key = hash(pid,pageno);  // index into HashTable
+   int i = HashTable[key];      // index into PageTable
+   PageData *p = PageTable[i];
+   if (p->pid == pid && p->pageno == pageno)
+      return i*PageSize + offset;
+   else
+      // hmmm ... this is not the page we want
+}
+
+// --------------------------------------------------------
+
+We can also consider a per-process page table:
+-> Each entry contains page status and physical address [if loaded]
+-> Potentially, we need upperLim[ ProcSize / PageSize ] entries in this table
+
+
+typedef struct { char status, int memPage } PageData;
+PageData *PageTables[maxProc];  // one entry for each process
+
+Address processToPhysical(pid, addr)
+{
+   PageData *ProcPageTable = PageTables[pid];
+   int pageno = addr / PageSize;
+   int offset = addr % PageSize;
+   PageData *p = ProcPageTable[pageno];
+   if (loaded(p->status))
+      return memPage*PageSize + offset;
+   else
+      // hmmm ... page not currently in memory
+}
 
 
 
