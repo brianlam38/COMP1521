@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "Memory.h"
 #include "Stats.h"
 #include "PageTable.h"
@@ -17,12 +18,15 @@
 typedef struct _node* Node;
 typedef struct _list* List;
 
-// Linked list data structure
+/* Linked list
+ * Node = Page Table Entry
+ * Node Value = Page Number
+ */
 typedef struct _node {
-    char value;
+    int pno;      // page number
     Node next;
 } node;
- 
+
 typedef struct _list {
     Node head;
 } list;
@@ -57,10 +61,35 @@ static int  fifoLast;       // index of last PTE in FIFO list (last elt in list)
 
 static int findVictim(int);
 
+/* 
+ * LRU and FIFO functions
+ */
+List newList(void) {
+   List l = malloc(sizeof(list));
+   assert(l != NULL);
+   l->head = NULL;
+   return l;
+}
+
+void freeList(List l) {
+   Node curr = l->head;
+   Node prev = NULL;
+   while (curr != NULL) {
+      prev = curr;
+      curr = curr->next;
+      free(prev);
+   }
+   free(l);
+}
+
 // initPageTable: create/initialise Page Table data structures
 
 void initPageTable(int policy, int np)
 {
+   /*
+    * Init LRU and FIFO data structures
+    */
+
    // initialising page table
    PageTable = malloc(np * sizeof(PTE));
    if (PageTable == NULL) {
@@ -163,7 +192,6 @@ static int findVictim(int time)              // you can add new data structures
       // When a page is modified, mark modified = 1
       // When replacement is needed, grab lowest / least referenced class (not used, not modified)
       //    Pick a page at random within that class
-
 
       break;
    case REPL_FIFO:
