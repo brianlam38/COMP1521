@@ -29,6 +29,7 @@ typedef struct _node {
 
 typedef struct _list {
     Node head;
+    Node tail;
 } list;
 
 // PTE = Page Table Entry
@@ -68,6 +69,7 @@ List newList(void) {
    List l = malloc(sizeof(list));
    assert(l != NULL);
    l->head = NULL;
+   l->tail = NULL;
    return l;
 }
 
@@ -89,6 +91,7 @@ void initPageTable(int policy, int np)
    /*
     * Init LRU and FIFO data structures
     */
+   //List FIFO = newList();
 
    // initialising page table
    PageTable = malloc(np * sizeof(PTE));
