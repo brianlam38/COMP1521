@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <time.h>
 #include "Memory.h"
 #include "Stats.h"
 #include "PageTable.h"
@@ -18,10 +19,7 @@
 typedef struct _node* Node;
 typedef struct _list* List;
 
-/* Linked list
- * Node = Page Table Entry
- * Node Value = Page Number
- */
+// Linked list data structure for page replacement algos
 typedef struct _node {
     int pno;      // page number
     Node next;
@@ -32,9 +30,12 @@ typedef struct _list {
     Node tail;
 } list;
 
+// global start time
+static int start_time;
+
 // PTE = Page Table Entry
 // PTE tells you info about a status of a page, with respect to its location in memory,
-//   wether its loaded in mem or not.
+//   whether its loaded in mem or not.
 
 typedef struct {
    char status;      // NOT_USED, IN_MEMORY, ON_DISK     in_mem = loaded | not_used / on_disk (if page contains initialised data) = not loaded
@@ -91,6 +92,9 @@ void initPageTable(int policy, int np)
    /*
     * Init LRU and FIFO data structures
     */
+   // init clock tick counters
+   start_time = clock();
+   printf("START TIME = %d\n", start_time);
    //List FIFO = newList();
 
    // initialising page table
@@ -151,6 +155,7 @@ int requestPage(int pno, char mode, int time)
       }
       printf("Page %d given frame %d\n",pno,fno);
       // TODO:
+      void loadFrame(int fno, int pno, int when);
       // load page pno into frame fno  // update the replacement page
       // update PTE for page
       // - new status
