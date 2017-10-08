@@ -21,3 +21,27 @@ Notes:
 -> We dont represent pages/frames in our system, nor 'execute' programs
 -> We provide 'data structures for the page table' and a 'minimal rep of memory pages'
 -> This gives enough to read a seq of page references and measure how the table might behave in a real implementation
+
+/* PSEUDOCODE */
+
+void processExecution(void) {
+	Page = ProcessReferenceAddr(addr)
+	if (Page is !loaded) {
+		placeInMemoryFrame(page);
+	}
+}
+
+void placeInMemoryFrame(page) {
+	if (frame exists) {
+		loadPageToFrame(page)
+	} else {
+		findVictim()
+	}
+}
+
+// Walkthrough of code
+
+
+
+
+

@@ -11,10 +11,10 @@
 
 static int nPeekRequests;  // # requests to read from a page
 static int nPokeRequests;  // # requests to change a page
-static int nLoads;         // # times a page is loaded into memory
-static int nSaves;         // # times a page is saved to disk
+static int nLoads;         // # times a page is loaded into memory	-> Load into disk
+static int nSaves;         // # times a page is saved to disk		-> Write to disk
 static int nHits;          // # requests answered by cached page
-static int nFaults;        // # requests requiring page load
+static int nFaults;        // # requests requiring page load      -> Page fault
 
 // Statistics operations
 
@@ -24,6 +24,8 @@ void initStats()
    nLoads = nSaves = nHits = nFaults = 0;
 }
 
+// Initialise counter functions
+// Functions will simply increment counters + summary stats at the end
 void countPeekRequest() { nPeekRequests++; }
 void countPokeRequest() { nPokeRequests++; }
 void countPageLoad() { nLoads++; }

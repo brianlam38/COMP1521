@@ -24,18 +24,22 @@ typedef struct {
 // The Memory object is not directly accessible
 //  outside this file (hence the static declaration)
 
-static MFI *Memory;
-static int  nFrames;
+static MFI *Memory;     // Single memory object, a representation of physical memory
+static int  nFrames;    // Each memory frame is rep by minimal amount of inf
+                        // (In reality memory frame wouldn't contain info related to page table, simply
+                        //   the data for the page that has been loaded.)
 
 // initMemory: create Memory data structure
 
 void initMemory(int nf)
-{
+{  
+   // mallocing Memory object
    Memory = malloc(nf * sizeof(MFI));
    if (Memory == NULL) {
       fprintf(stderr, "Can't initialise Memory\n");
       exit(EXIT_FAILURE);
    }
+   // initialising memory frames + flags
    nFrames = nf;
    for (int i = 0; i < nFrames; i++) {
       Memory[i].whichPage = NONE;

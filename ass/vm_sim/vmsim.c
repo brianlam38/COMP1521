@@ -23,9 +23,14 @@ int getNextReference(int *, char *);
 int main(int argc, char *argv[])
 {
    int policy;  // page replacement policy
-   int nFrames; // size of memory (in # frames)
-   int nPages;  // size of process address space
+   int nFrames; // size of physical memory (in # frames)
+   int nPages;  // size of virtual memory / process address space [ pages / frames are the same size ]
+                //   -> when you want to ref a page in a process addr space, it needs to be loaded into
+                //      a frame in virtual memory
 
+   // grab values off cmd line
+   // uses these values to initialise data structures + stat counters
+   // if debugging, it will give a dump of the initial stage of the page table
    if (!processArgs(argc, argv, &policy, &nPages, &nFrames))
       return EXIT_FAILURE;
 
@@ -41,16 +46,30 @@ int main(int argc, char *argv[])
    int  pageNo;    // which page is accessed
    char mode;      // accessed for read or write
    int  time = 0;  // current time on clock
+
+   // Simulator reads a sequence of memory references (read / write + which page to read / write from)
+   // When references run out, it means the program has finished executing
+   // These references are supposed to be a TRACE of memory access behaviour of a program.
+   //    e.g. starts reading from pg 0, writing to pg 7, reading pg 1, writing pg 6 etc.
    while (getNextReference(&pageNo, &mode)) {
 #ifdef DBUG
       printf("\n=== Request %c%d @ t=%d ===\n",mode,pageNo,time);
 #endif
+      // read request - look at something inside a page
       if (mode == 'r')
          countPeekRequest();
+      // write request - writing / modifying existing page
       else
          countPokeRequest();
+      // IMPORT
+      // Given a memory addr, convert it into an offset / pageNo and make sure relevant page is loaded into
+      // memory once we know where in memory we need to load it. We cna an absolute memory address that we can use.
+      // MODE / TIME are purely for statistics tracking
+      //   -> Mode: Read / write
+      //   -> Time: A clock-tick, starting at 0 and tick for every request. Every request happens at a new time.
       requestPage(pageNo, mode, time);
       time++;
+// Debugging after we process the request
 #ifdef DBUG
       showPageTableStatus();
 #endif
