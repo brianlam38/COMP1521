@@ -14,6 +14,19 @@
 #define IN_MEMORY 1
 #define ON_DISK 2
 
+typedef struct _node* Node;
+typedef struct _list* List;
+
+// Linked list data structure
+typedef struct _node {
+    char value;
+    Node next;
+} node;
+ 
+typedef struct _list {
+    Node head;
+} list;
+
 // PTE = Page Table Entry
 // PTE tells you info about a status of a page, with respect to its location in memory,
 //   wether its loaded in mem or not.
@@ -135,16 +148,31 @@ int requestPage(int pno, char mode, int time)
 
 // Work out a page victim to be replaced
 // Least Recently Used / First in first out
-static int findVictim(int time)
+static int findVictim(int time)              // you can add new data structures
 {
    int victim = 0;
    switch (replacePolicy) {
    case REPL_LRU:
       // TODO: implement LRU strategy
+      // SETTING BITS (most recent -> least recent)
+      // 4. USED, MODIFIED
+      // 3. USED, NOT MODIFIED
+      // 2. NOT USED, MODIFIED
+      // 1. NOT USED, NOT MODIFIED
+      // When a page is referenced, mark referenced = 1
+      // When a page is modified, mark modified = 1
+      // When replacement is needed, grab lowest / least referenced class (not used, not modified)
+      //    Pick a page at random within that class
+
+
       break;
    case REPL_FIFO:
       // TODO: implement FIFO strategy
-      // Implement using a LIST
+      // Implement using a LIST (head and tail)
+      // Keep track of all pages in a queue
+      //    Most recent page = tail of list
+      //    Oldest arrival in memory = head of list
+      // When replacement is needed, grab head of the queue
       break;
    case REPL_CLOCK:
       return 0;
