@@ -154,20 +154,19 @@ int requestPage(int pno, char mode, int time)
          // - not accessed, not loaded
       }
       printf("Page %d given frame %d\n",pno,fno);
-      // TODO:
-      // clock "when" -> load page pno into frame fno
+      // clock load time, load page pno into frame fno
       int when = clock();
       loadFrame(fno, pno, when);
       // update PTE for page
-         // - new status
       p->status = IN_MEMORY;     // new status
-      p->modified = 0;           // not yet modified
-      p->frame = fno;            // associated with frame no
+      p->modified = 0;           // just loaded, not yet modified
+      p->frame = fno;            // associate page with frame no
       p->loadTime = when;        // update loadTime
-         // - just loaded
       break;
-   case IN_MEMORY:                  // if the page IS in memory, indicate that we got a page table hit
-      // TODO: add stats collection // we are done
+   case IN_MEMORY:
+      // TODO: add stats collection - POSSIBLY ADD OTHER STATS?
+      // If page already in memorys, PageHit++, request complete
+      countPageHit();
       break;
    default:
       fprintf(stderr,"Invalid page status\n");  // if any other case, invalid page status and we should fix it
