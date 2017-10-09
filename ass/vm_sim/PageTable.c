@@ -87,10 +87,10 @@ void initStratData(int np) {
 }
 // show pages in current list
 void showPageList(List l) {
-   printf("--- SHOWING PAGES IN LIST ---");
+   printf("--- SHOWING PAGES IN LIST ---\n");
    Node curr = l->head;
    while (curr != NULL) {
-      printf("PAGE NO = %d", curr->pno);
+      printf("PAGE NO = %d\n", curr->pno);
       curr = curr->next;
    }
 }
@@ -130,9 +130,10 @@ static int findVictim(int);
 
 void initPageTable(int policy, int np)
 {
-   // init page replaement data
+   // init page replacement data structures
    initStratData(np);
    showPageList(FIFO);
+
    // initialising page table
    PageTable = malloc(np * sizeof(PTE));
    if (PageTable == NULL) {
@@ -239,10 +240,9 @@ int requestPage(int pno, char mode, int time)
 
 // findVictim: find a page to be replaced
 // uses the configured replacement policy
-
 // Work out a page victim to be replaced
 // Least Recently Used / First in first out
-static int findVictim(int time)              // you can add new data structures
+static int findVictim(int time)
 {
    int victim = 0;
    switch (replacePolicy) {
