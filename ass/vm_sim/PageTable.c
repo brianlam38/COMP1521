@@ -128,7 +128,7 @@ void initPageTable(int policy, int np)
 int requestPage(int pno, char mode, int time)
 {
    // Page number fits in a range of valid pages
-   if (pno < 0 || pno >= nPages-1) {
+   if (pno < 0 || pno >= nPages) {
       fprintf(stderr,"Invalid page reference\n");
       exit(EXIT_FAILURE);
    }
@@ -159,10 +159,12 @@ int requestPage(int pno, char mode, int time)
       int when = clock();
       loadFrame(fno, pno, when);
       // update PTE for page
+         // - new status
       p->status = IN_MEMORY;     // new status
       p->modified = 0;           // not yet modified
       p->frame = fno;            // associated with frame no
       p->loadTime = when;        // update loadTime
+         // - just loaded
       break;
    case IN_MEMORY:                  // if the page IS in memory, indicate that we got a page table hit
       // TODO: add stats collection // we are done
