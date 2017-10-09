@@ -54,14 +54,11 @@ void append(List l, int pno) {
    Node new = malloc(sizeof(node));
    new->pno = pno;
    new->next = NULL;
-   Node curr = l->head;
+   Node curr = l->tail;
    if (curr == NULL) {
       l->head = new;
       l->tail = new;
    } else {
-      while (curr->next != NULL) {
-         curr = curr->next;
-      }
       curr->next = new;
       l->tail = new;
    }
@@ -98,10 +95,9 @@ void showPageList(List l) {
    }
 }
 
-// PTE = Page Table Entry
-// PTE tells you info about a status of a page, with respect to its location in memory,
-//   whether its loaded in mem or not.
+/* --- PAGE TABLE DATA --- */
 
+// Page Table Entry struct
 typedef struct {
    char status;      // NOT_USED, IN_MEMORY, ON_DISK     in_mem = loaded | not_used / on_disk (if page contains initialised data) = not loaded
    char modified;    // boolean: has it changed / been modified since page was loaded
@@ -110,44 +106,31 @@ typedef struct {
    int  loadTime;    // clock tick for last time loaded
    int  nPeeks;      // total number times this page read (how many times did we look at the page)
    int  nPokes;      // total number times this page modified (how many times did we write data into the page in memory)
-   // TODO: add more fields here, if needed ...
+   // add more if needed
 } PTE;
-
-// The virtual address space of the process is managed
-//  by an array of Page Table Entries (PTEs)
-// The Page Table is not directly accessible outside
-//  this file (hence the static declaration)
 
 static PTE *PageTable;      // array of page table entries (ptr to first entry)
 static int  nPages;         // # entries in page table
 static int  replacePolicy;  // how to do page replacement
-static int  fifoList;       // index of first PTE in FIFO list (first elt in list)
-static int  fifoLast;       // index of last PTE in FIFO list (last elt in list)
+static int findVictim(int); // private findVictim() function
 
-// Forward refs for private functions
+/* --- MAIN PAGE TABLE PROGRAM --- */
 
-static int findVictim(int);
-
-
-// initPageTable: create/initialise Page Table data structures
-
+/* Initialise Page Table data */
 void initPageTable(int policy, int np)
 {
    // init page replacement data structures
    initStratData(np);
-
-   // initialising page table
+   // init page table
    PageTable = malloc(np * sizeof(PTE));
    if (PageTable == NULL) {
       fprintf(stderr, "Can't initialise Memory\n");
       exit(EXIT_FAILURE);
    }
-   // setting policy, ctr of pages, init fifo list
+   // init global data
    replacePolicy = policy;
    nPages = np;
-   fifoList = 0;
-   fifoLast = nPages-1;
-   // setting up initial status of all pages in the page table
+   // init all PTE array data
    for (int i = 0; i < nPages; i++) {
       PTE *p = &PageTable[i];
       p->status = NOT_USED;
@@ -159,13 +142,13 @@ void initPageTable(int policy, int np)
    }
 }
 
-// requestPage: request access to page pno in mode
-// returns memory frame holding this page
-// page may have to be loaded
-// PTE(status,modified,frame,accessTime,nextPage,nPeeks,nWrites)
-
+/* 
+ * Request access to page pno in mode
+ * @return frame for this page
+ */
 int requestPage(int pno, char mode, int time)
 {
+   // page number test
    showPageList(FIFO);
    // check if pno is within valid range
    if (pno < 0 || pno >= nPages) {
@@ -177,17 +160,18 @@ int requestPage(int pno, char mode, int time)
    // declare frame no
    int fno;
    switch (p->status) {
-      /* --- NOT IN MEMORY --- */
       case NOT_USED:
       case ON_DISK:
-         countPageFault();             // pageFault++
-         fno = findFreeFrame();        // free frame exists
-         if (fno == NONE) {            // page replacement needed
-            int vno = findVictim(time);   // ret page number
+         // pageFault++
+         countPageFault();
+         // free frame exists
+         fno = findFreeFrame();
+         // page replacement needed, target victim page
+         if (fno == NONE) {
+            int vno = findVictim(time);
    #ifdef DBUG
             printf("Evict page %d\n",vno);
    #endif
-            /* --- UPDATING VICTIM PAGE --- */
             // init entry to victim page
             PTE *v = &PageTable[vno];
             fno = v->frame;
@@ -207,11 +191,12 @@ int requestPage(int pno, char mode, int time)
             v->accessTime = NONE;
             v->loadTime = NONE;
          }
+         /* --- LOAD PAGE --- */
          printf("Page %d given frame %d\n",pno,fno);
          // clock load time, load page pno into frame fno (ctr exists loadFrame())
          int when = clock();
          loadFrame(fno, pno, when);
-         // update PTE for page
+         /* --- UPDATING PTE --- */
          p->status = IN_MEMORY;     // new status
          p->modified = 0;           // just loaded, not yet modified
          p->frame = fno;            // associate page with frame no
@@ -234,11 +219,9 @@ int requestPage(int pno, char mode, int time)
    }
    // READ - update peek, peekCtr++
    if (mode == 'r') {
-      countPeekRequest();
       p->nPeeks++;
    // WRITE - update pokes + mod, pokeCtr++
    } else if (mode == 'w') {
-      countPokeRequest();
       p->nPokes++;
       p->modified = 1;
    }
@@ -266,6 +249,8 @@ static int findVictim(int time)
       // When a page is modified, mark modified = 1
       // When replacement is needed, grab lowest / least referenced class (not used, not modified)
       //    Pick a page at random within that class
+
+
       break;
    case REPL_FIFO:
       // TODO: implement FIFO strategy
@@ -275,7 +260,7 @@ static int findVictim(int time)
       //    Oldest arrival in memory = head of list
       // When replacement is needed, grab head of the queue
 
-      // grab pno of victim (head of queue)
+      // O(1) operation to find victim pno
       victim = FIFO->head->pno;
       // link to new head and rm old
       Node curr = FIFO->head;
