@@ -19,7 +19,7 @@
 typedef struct _node* Node;
 typedef struct _list* List;
 
-/* LIST DATA STRUCTURES / FUNCTIONS FOR PAGE REPLACEMENT */
+/* --- DATA STRUCTURE / FUNCTIONS FOR PAGE REPLACEMENT -- */
 
 typedef struct _node {
     int pno;      // page number
@@ -30,7 +30,6 @@ typedef struct _list {
     Node head;
     Node tail;
 } list;
-
 // create new list
 List newList(void) {
    List l = malloc(sizeof(list));
@@ -72,6 +71,8 @@ void append(List l, int pno) {
 
 // global start time
 static int start_time;
+static List FIFO;
+//static List LRU;
 
 // initialise list for page replacement + timing var
 void initStratData(int np) {
@@ -79,7 +80,7 @@ void initStratData(int np) {
    start_time = clock();
    printf("START TIME = %d\n", start_time);
    // init FIFO list + page nodes
-   List FIFO = newList();
+   FIFO = newList();
    for (int i = 0; i < np; i++) {
       append(FIFO, i);
    }
@@ -129,7 +130,9 @@ static int findVictim(int);
 
 void initPageTable(int policy, int np)
 {
-
+   // init page replaement data
+   initStratData(np);
+   showPageList(FIFO);
    // initialising page table
    PageTable = malloc(np * sizeof(PTE));
    if (PageTable == NULL) {
