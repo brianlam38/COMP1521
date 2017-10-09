@@ -19,7 +19,8 @@
 typedef struct _node* Node;
 typedef struct _list* List;
 
-// Linked list data structure for page replacement algos
+/* LIST DATA STRUCTURES / FUNCTIONS FOR PAGE REPLACEMENT */
+
 typedef struct _node {
     int pno;      // page number
     Node next;
@@ -30,8 +31,68 @@ typedef struct _list {
     Node tail;
 } list;
 
+// create new list
+List newList(void) {
+   List l = malloc(sizeof(list));
+   assert(l != NULL);
+   l->head = NULL;
+   l->tail = NULL;
+   return l;
+}
+// free list
+void freeList(List l) {
+   Node curr = l->head;
+   Node prev = NULL;
+   while (curr != NULL) {
+      prev = curr;
+      curr = curr->next;
+      free(prev);
+   }
+   free(l);
+}
+// append node to list
+void append(List l, int pno) {
+   Node new = malloc(sizeof(node));
+   new->pno = pno;
+   new->next = NULL;
+   Node curr = l->head;
+   if (curr == NULL) {
+      l->head = new;
+      l->tail = new;
+   } else {
+      while (curr->next != NULL) {
+         curr = curr->next;
+      }
+      curr->next = new;
+      l->tail = new;
+   }
+}
+
+/* --- LRU AND FIFO FUNCTIONS --- */
+
 // global start time
 static int start_time;
+
+// initialise list for page replacement + timing var
+void initStratData(int np) {
+   // init clock tick start
+   start_time = clock();
+   printf("START TIME = %d\n", start_time);
+   // init FIFO list + page nodes
+   List FIFO = newList();
+   for (int i = 0; i < np; i++) {
+      append(FIFO, i);
+   }
+}
+// show pages in current list
+void showPageList(List l) {
+   printf("--- SHOWING PAGES IN LIST ---");
+   Node curr = l->head;
+   while (curr != NULL) {
+      printf("PAGE NO = %d", curr->pno);
+      curr = curr->next;
+   }
+}
 
 // PTE = Page Table Entry
 // PTE tells you info about a status of a page, with respect to its location in memory,
@@ -63,38 +124,11 @@ static int  fifoLast;       // index of last PTE in FIFO list (last elt in list)
 
 static int findVictim(int);
 
-/* 
- * LRU and FIFO functions
- */
-List newList(void) {
-   List l = malloc(sizeof(list));
-   assert(l != NULL);
-   l->head = NULL;
-   l->tail = NULL;
-   return l;
-}
-
-void freeList(List l) {
-   Node curr = l->head;
-   Node prev = NULL;
-   while (curr != NULL) {
-      prev = curr;
-      curr = curr->next;
-      free(prev);
-   }
-   free(l);
-}
 
 // initPageTable: create/initialise Page Table data structures
 
 void initPageTable(int policy, int np)
 {
-   /* INIT LRU AND FIFO DATA STRUCTURES
-    */
-   // init clock tick start
-   start_time = clock();
-   printf("START TIME = %d\n", start_time);
-   //List FIFO = newList();
 
    // initialising page table
    PageTable = malloc(np * sizeof(PTE));
@@ -136,57 +170,51 @@ int requestPage(int pno, char mode, int time)
    // declare frame no
    int fno;
    switch (p->status) {
-   // never been used or saved in disk
-   case NOT_USED:
-   case ON_DISK:
-      /* --- STATS COLLECTION --- */
-      // Page not in memory, pageFault++
-      countPageFault();
-
-      // free frame exists in mem
-      fno = findFreeFrame();
-      // page replacement required, return pno (not fno)
-      if (fno == NONE) {
-         int vno = findVictim(time);
-#ifdef DBUG
-         printf("Evict page %d\n",vno);
-#endif
-         /* --- UPDATING VICTIM PAGE --- */
-         // init ptr to v.p PTE, grab v.p fno
-         PTE *v = &PageTable[vno];
-         fno = v->frame;
-         // if modified, save frame, flip ON_DISK status
-         // NOTE: save is counted in saveFrame()
-         if (v->modified == 1) {
-            saveFrame(fno);
-            v->status = ON_DISK;
+      /* --- NOT IN MEMORY --- */
+      case NOT_USED:
+      case ON_DISK:
+         countPageFault();             // pageFault++
+         fno = findFreeFrame();        // free frame exists
+         if (fno == NONE) {            // page replacement needed
+            int vno = findVictim(time);
+   #ifdef DBUG
+            printf("Evict page %d\n",vno);
+   #endif
+            /* --- UPDATING VICTIM PAGE --- */
+            // init entry to victim page
+            PTE *v = &PageTable[vno];
+            fno = v->frame;
+            // if modified, save frame, flip ON_DISK status
+            // NOTE: save is counted in saveFrame()
+            if (v->modified == 1) {
+               saveFrame(fno);
+               v->status = ON_DISK;
+            }
+            // update v.p status
+            if (v->status != ON_DISK) {
+               v->status = NOT_USED;
+            }
+            // reset modified, fno, access/load times    // DOES ACCESS/LOAD TIME RESET TO NONE AFTER FREEING?
+            v->modified = 0;
+            v->frame = NONE;
+            v->accessTime = NONE;
+            v->loadTime = NONE;
          }
-         // update v.p status
-         if (v->status != ON_DISK) {
-            v->status = NOT_USED;
-         }
-         // reset modified, fno, access/load times    // DOES ACCESS/LOAD TIME RESET TO NONE AFTER FREEING?
-         v->modified = 0;
-         v->frame = NONE;
-         v->accessTime = NONE;
-         v->loadTime = NONE;
-      }
-      printf("Page %d given frame %d\n",pno,fno);
-      // clock load time, load page pno into frame fno
-      // NOTE: load is counted in loadFrame()
-      int when = clock();
-      loadFrame(fno, pno, when);
-      // update PTE for page
-      p->status = IN_MEMORY;     // new status
-      p->modified = 0;           // just loaded, not yet modified
-      p->frame = fno;            // associate page with frame no
-      p->loadTime = when;        // update loadTime
-      break;
-   case IN_MEMORY:
-      // TODO: add stats collection                   // POSSIBLY ADD OTHER STATS?
-      // If page already in memorys, PageHit++, request complete
-      countPageHit();
-      break;
+         printf("Page %d given frame %d\n",pno,fno);
+         // clock load time, load page pno into frame fno (ctr exists loadFrame())
+         int when = clock();
+         loadFrame(fno, pno, when);
+         // update PTE for page
+         p->status = IN_MEMORY;     // new status
+         p->modified = 0;           // just loaded, not yet modified
+         p->frame = fno;            // associate page with frame no
+         p->loadTime = when;        // update loadTime
+         break;
+      /* --- IN MEMORY --- */
+      case IN_MEMORY:
+         // PageHit++, request complete      ---> POSSIBLY MORE STATS?
+         countPageHit();
+         break;
    default:
       fprintf(stderr,"Invalid page status\n");  // if any other case, invalid page status and we should fix it
       exit(EXIT_FAILURE);
@@ -203,7 +231,6 @@ int requestPage(int pno, char mode, int time)
    }
    // update access time
    p->accessTime = time;
-   // return fno
    return p->frame;
 }
 
@@ -236,6 +263,7 @@ static int findVictim(int time)              // you can add new data structures
       //    Most recent page = tail of list
       //    Oldest arrival in memory = head of list
       // When replacement is needed, grab head of the queue
+
       break;
    case REPL_CLOCK:
       return 0;
