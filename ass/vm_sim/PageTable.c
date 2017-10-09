@@ -16,10 +16,10 @@
 #define IN_MEMORY 1
 #define ON_DISK 2
 
+/* --- LINKED LIST DATA STRUCTURE / FUNCTIONS --- */
+
 typedef struct _node* Node;
 typedef struct _list* List;
-
-/* --- DATA STRUCTURE / FUNCTIONS FOR PAGE REPLACEMENT -- */
 
 typedef struct _node {
     int pno;      // page number
@@ -30,6 +30,7 @@ typedef struct _list {
     Node head;
     Node tail;
 } list;
+
 // create new list
 List newList(void) {
    List l = malloc(sizeof(list));
@@ -38,6 +39,7 @@ List newList(void) {
    l->tail = NULL;
    return l;
 }
+
 // free list
 void freeList(List l) {
    Node curr = l->head;
@@ -49,7 +51,7 @@ void freeList(List l) {
    }
    free(l);
 }
-// append node to list
+// O(1) append node to list
 void append(List l, int pno) {
    Node new = malloc(sizeof(node));
    new->pno = pno;
@@ -64,25 +66,17 @@ void append(List l, int pno) {
    }
 }
 
-/* --- LRU AND FIFO FUNCTIONS --- */
+/* --- LRU AND FIFO SPECIFIC FUNCTIONS --- */
 
 // global start time
 static int start_time;
 static List FIFO;
 //static List LRU;
 
-// initialise list for page replacement + timing var
-void initStratData(int np) {
-   // init clock tick start
-   start_time = clock();
-   printf("START TIME = %d\n", start_time);
-   // init FIFO list + page nodes
-   FIFO = newList();
-   //for (int i = 0; i < np; i++) {
-   //   append(FIFO, i);
-   //}
-}
-// show pages in current list
+/*
+ * For testing
+ * Show pages in current list
+ */
 void showPageList(List l) {
    printf("--- SHOWING PAGES IN LIST ---\n");
    Node curr = l->head;
@@ -119,8 +113,10 @@ static int findVictim(int); // private findVictim() function
 /* Initialise Page Table data */
 void initPageTable(int policy, int np)
 {
+   // init start clock
+   start_time = clock();
    // init page replacement data structures
-   initStratData(np);
+   FIFO = newList();
    // init page table
    PageTable = malloc(np * sizeof(PTE));
    if (PageTable == NULL) {
@@ -191,30 +187,24 @@ int requestPage(int pno, char mode, int time)
             v->accessTime = NONE;
             v->loadTime = NONE;
          }
-         /* --- LOAD PAGE --- */
+         // load page
          printf("Page %d given frame %d\n",pno,fno);
-         // clock load time, load page pno into frame fno (ctr exists loadFrame())
          int when = clock();
          loadFrame(fno, pno, when);
-         /* --- UPDATING PTE --- */
-         p->status = IN_MEMORY;     // new status
+         // update PTE
+         p->status = IN_MEMORY;
          p->modified = 0;           // just loaded, not yet modified
-         p->frame = fno;            // associate page with frame no
-         p->loadTime = when;        // update loadTime
-
-         // update LRU data structure
-
-         // add most recent to FIFO list tail
+         p->frame = fno;
+         p->loadTime = when;
+         // update FIFO list w/ new tail
          append(FIFO, pno);
-
          break;
-      /* --- IN MEMORY --- */
       case IN_MEMORY:
-         // PageHit++, request complete      ---> POSSIBLY MORE STATS?
+         // PageHit++, request complete
          countPageHit();
          break;
    default:
-      fprintf(stderr,"Invalid page status\n");  // if any other case, invalid page status and we should fix it
+      fprintf(stderr,"Invalid page status\n");
       exit(EXIT_FAILURE);
    }
    // READ - update peek, peekCtr++
@@ -230,10 +220,10 @@ int requestPage(int pno, char mode, int time)
    return p->frame;
 }
 
-// findVictim: find a page to be replaced
-// uses the configured replacement policy
-// Work out a page victim to be replaced
-// Least Recently Used / First in first out
+/* 
+ * Find a page to be replaced
+ * @return victim page no.
+ */
 static int findVictim(int time)
 {
    int victim = 0;
@@ -275,9 +265,7 @@ static int findVictim(int time)
    return victim;
 }
 
-// showPageTableStatus: dump page table
-// PTE(status,modified,frame,accessTime,nextPage,nPeeks,nWrites)
-
+/* Display Current PT Status */
 void showPageTableStatus(void)
 {
    char *s;
