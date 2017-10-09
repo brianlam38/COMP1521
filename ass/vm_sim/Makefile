@@ -2,7 +2,7 @@
 # COMP1521 17s2 Assignment 2
 
 CC=gcc
-CFLAGS=-Wall -Werror -std=c99 -DDBUG=1
+CFLAGS=-Wall -Werror -std=c99
 
 vmsim : vmsim.o Memory.o PageTable.o Stats.o
 vmsim.o : vmsim.c Memory.h PageTable.h

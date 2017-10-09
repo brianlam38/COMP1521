@@ -1,6 +1,7 @@
 // PageTable.c ... implementation of Page Table operations
 // COMP1521 17s2 Assignment 2
 // Written by John Shepherd, September 2017
+// Page Replacement Solution by Brian Lam z5035087
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,7 +12,6 @@
 #include "PageTable.h"
 
 // Symbolic constants
-
 #define NOT_USED 0
 #define IN_MEMORY 1
 #define ON_DISK 2
@@ -145,7 +145,9 @@ void initPageTable(int policy, int np)
 int requestPage(int pno, char mode, int time)
 {
    // page number test
+#ifdef DBUG
    showPageList(FIFO);
+#endif
    // check if pno is within valid range
    if (pno < 0 || pno >= nPages) {
       fprintf(stderr,"Invalid page reference\n");
@@ -188,7 +190,9 @@ int requestPage(int pno, char mode, int time)
             v->loadTime = NONE;
          }
          // load page
+   #ifdef DBUG
          printf("Page %d given frame %d\n",pno,fno);
+   #endif
          int when = clock();
          loadFrame(fno, pno, when);
          // update PTE
