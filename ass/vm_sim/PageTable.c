@@ -155,13 +155,14 @@ int requestPage(int pno, char mode, int time)
       }
       printf("Page %d given frame %d\n",pno,fno);
       // TODO:
-      void loadFrame(int fno, int pno, int when);
-      // load page pno into frame fno  // update the replacement page
+      // clock "when" -> load page pno into frame fno
+      int when = clock();
+      loadFrame(fno, pno, when);
       // update PTE for page
-      // - new status
-      // - not yet modified
-      // - associated with frame fno
-      // - just loaded
+      p->status = IN_MEMORY;     // new status
+      p->modified = 0;           // not yet modified
+      p->frame = fno;            // associated with frame no
+      p->loadTime = when;        // update loadTime
       break;
    case IN_MEMORY:                  // if the page IS in memory, indicate that we got a page table hit
       // TODO: add stats collection // we are done
