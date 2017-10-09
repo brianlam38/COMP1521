@@ -81,14 +81,17 @@ void initStratData(int np) {
    printf("START TIME = %d\n", start_time);
    // init FIFO list + page nodes
    FIFO = newList();
-   for (int i = 0; i < np; i++) {
-      append(FIFO, i);
-   }
+   //for (int i = 0; i < np; i++) {
+   //   append(FIFO, i);
+   //}
 }
 // show pages in current list
 void showPageList(List l) {
    printf("--- SHOWING PAGES IN LIST ---\n");
    Node curr = l->head;
+   if (curr == NULL) {
+      printf("NONE LOADED\n"); 
+   }
    while (curr != NULL) {
       printf("PAGE NO = %d\n", curr->pno);
       curr = curr->next;
@@ -132,7 +135,6 @@ void initPageTable(int policy, int np)
 {
    // init page replacement data structures
    initStratData(np);
-   showPageList(FIFO);
 
    // initialising page table
    PageTable = malloc(np * sizeof(PTE));
@@ -164,6 +166,7 @@ void initPageTable(int policy, int np)
 
 int requestPage(int pno, char mode, int time)
 {
+   showPageList(FIFO);
    // check if pno is within valid range
    if (pno < 0 || pno >= nPages) {
       fprintf(stderr,"Invalid page reference\n");
@@ -180,7 +183,7 @@ int requestPage(int pno, char mode, int time)
          countPageFault();             // pageFault++
          fno = findFreeFrame();        // free frame exists
          if (fno == NONE) {            // page replacement needed
-            int vno = findVictim(time);
+            int vno = findVictim(time);   // ret page number
    #ifdef DBUG
             printf("Evict page %d\n",vno);
    #endif
@@ -213,6 +216,12 @@ int requestPage(int pno, char mode, int time)
          p->modified = 0;           // just loaded, not yet modified
          p->frame = fno;            // associate page with frame no
          p->loadTime = when;        // update loadTime
+
+         // update LRU data structure
+
+         // add most recent to FIFO list tail
+         append(FIFO, pno);
+
          break;
       /* --- IN MEMORY --- */
       case IN_MEMORY:
@@ -257,7 +266,6 @@ static int findVictim(int time)
       // When a page is modified, mark modified = 1
       // When replacement is needed, grab lowest / least referenced class (not used, not modified)
       //    Pick a page at random within that class
-
       break;
    case REPL_FIFO:
       // TODO: implement FIFO strategy
@@ -267,6 +275,14 @@ static int findVictim(int time)
       //    Oldest arrival in memory = head of list
       // When replacement is needed, grab head of the queue
 
+      // grab pno of victim (head of queue)
+      victim = FIFO->head->pno;
+      // link to new head and rm old
+      Node curr = FIFO->head;
+      Node prev = curr;
+      curr = curr->next;
+      FIFO->head = curr;
+      free(prev);
       break;
    case REPL_CLOCK:
       return 0;
