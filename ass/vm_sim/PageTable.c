@@ -192,11 +192,11 @@ int requestPage(int pno, char mode, int time)
       exit(EXIT_FAILURE);
    }
    // READ - update peek, peekCtr++
-   if (mode == 'r')
+   if (mode == 'r') {
       countPeekRequest();
       p->nPeeks++;
    // WRITE - update pokes + mod, pokeCtr++
-   else if (mode == 'w') {
+   } else if (mode == 'w') {
       countPokeRequest();
       p->nPokes++;
       p->modified = 1;
