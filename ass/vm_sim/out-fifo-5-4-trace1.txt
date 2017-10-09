@@ -1,4 +1,4 @@
-START TIME = 3666
+START TIME = 3980
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
 [00]      -   no      -       -       -       0       0
 [01]      -   no      -       -       -       0       0
@@ -9,7 +9,7 @@ Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
 === Request r0 @ t=0 ===
 Page 0 given frame 0
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem   no      0       0    3711       1       0
+[00]    mem   no      0       0    4045       1       0
 [01]      -   no      -       -       -       0       0
 [02]      -   no      -       -       -       0       0
 [03]      -   no      -       -       -       0       0
@@ -18,8 +18,8 @@ Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
 === Request r1 @ t=1 ===
 Page 1 given frame 1
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem   no      0       0    3711       1       0
-[01]    mem   no      1       1    3721       1       0
+[00]    mem   no      0       0    4045       1       0
+[01]    mem   no      1       1    4064       1       0
 [02]      -   no      -       -       -       0       0
 [03]      -   no      -       -       -       0       0
 [04]      -   no      -       -       -       0       0
@@ -27,47 +27,49 @@ Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
 === Request r2 @ t=2 ===
 Page 2 given frame 2
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem   no      0       0    3711       1       0
-[01]    mem   no      1       1    3721       1       0
-[02]    mem   no      2       2    3729       1       0
+[00]    mem   no      0       0    4045       1       0
+[01]    mem   no      1       1    4064       1       0
+[02]    mem   no      2       2    4082       1       0
 [03]      -   no      -       -       -       0       0
 [04]      -   no      -       -       -       0       0
 
 === Request r3 @ t=3 ===
 Page 3 given frame 3
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem   no      0       0    3711       1       0
-[01]    mem   no      1       1    3721       1       0
-[02]    mem   no      2       2    3729       1       0
-[03]    mem   no      3       3    3739       1       0
+[00]    mem   no      0       0    4045       1       0
+[01]    mem   no      1       1    4064       1       0
+[02]    mem   no      2       2    4082       1       0
+[03]    mem   no      3       3    4099       1       0
 [04]      -   no      -       -       -       0       0
 
 === Request r4 @ t=4 ===
 Evict page 0
-Page 4 given frame -1
+Page 4 given frame 0
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem   no      0       0    3711       1       0
-[01]    mem   no      1       1    3721       1       0
-[02]    mem   no      2       2    3729       1       0
-[03]    mem   no      3       3    3739       1       0
-[04]    mem   no      -       4    3748       1       0
+[00]      -   no      -       -       -       1       0
+[01]    mem   no      1       1    4064       1       0
+[02]    mem   no      2       2    4082       1       0
+[03]    mem   no      3       3    4099       1       0
+[04]    mem   no      0       4    4118       1       0
 
 === Request w0 @ t=5 ===
+Evict page 0
+Page 0 given frame -1
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem  yes      0       5    3711       1       1
-[01]    mem   no      1       1    3721       1       0
-[02]    mem   no      2       2    3729       1       0
-[03]    mem   no      3       3    3739       1       0
-[04]    mem   no      -       4    3748       1       0
+[00]    mem  yes      -       5    4137       1       1
+[01]    mem   no      1       1    4064       1       0
+[02]    mem   no      2       2    4082       1       0
+[03]    mem   no      3       3    4099       1       0
+[04]    mem   no      0       4    4118       1       0
 
 === Request w1 @ t=6 ===
 Page Status Mod?  Frame  Acc(t) Load(t)  #Peeks  #Pokes
-[00]    mem  yes      0       5    3711       1       1
-[01]    mem  yes      1       6    3721       1       1
-[02]    mem   no      2       2    3729       1       0
-[03]    mem   no      3       3    3739       1       0
-[04]    mem   no      -       4    3748       1       0
+[00]    mem  yes      -       5    4137       1       1
+[01]    mem  yes      1       6    4064       1       1
+[02]    mem   no      2       2    4082       1       0
+[03]    mem   no      3       3    4099       1       0
+[04]    mem   no      0       4    4118       1       0
 
 =====Summary ====
 Requests:  #peeks: 5,  #pokes: 2,  total: 7
-Paging:    #hits: 2,  #faults: 0,  #loads: 5,  #saves: 0
+Paging:    #hits: 1,  #faults: 0,  #loads: 6,  #saves: 0

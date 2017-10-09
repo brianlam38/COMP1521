@@ -144,14 +144,26 @@ int requestPage(int pno, char mode, int time)
 #ifdef DBUG
          printf("Evict page %d\n",vno);
 #endif
-         // TODO:
-         // if victim page modified, save its frame      // update victim page
-         // collect frame# (fno) for victim page
-         // update PTE for victim page
-         // - new status
-         // - no longer modified
-         // - no frame mapping
-         // - not accessed, not loaded
+         /* --- UPDATING VICTIM PAGE --- */
+         // init ptr to v.p PTE, grab v.p fno
+         PTE *v = &PageTable[vno];
+         fno = v->frame;
+         // if modified, save frame, flip ON_DISK status
+         if (v->modified == 1) {
+            saveFrame(fno);
+            v->status = ON_DISK;
+         }
+         // update v.p status
+         if (v->status != ON_DISK) {
+            v->status = NOT_USED;
+         }
+         // no longer modified
+         v->modified = 0;
+         // no frame mapping
+         v->frame = NONE;
+         // not accessed, not loaded         // DOES ACCESS/LOAD TIME RESET TO NONE AFTER FREEING?
+         v->accessTime = NONE;
+         v->loadTime = NONE;
       }
       printf("Page %d given frame %d\n",pno,fno);
       // clock load time, load page pno into frame fno

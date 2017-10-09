@@ -247,6 +247,7 @@ oldest = now
 victim = NONE
 for (i = 0; i < #Pages; i++) {
    P = PageTable[i]
+   // Page is 
    if (P''s loadTime < oldest) {
       oldest = P''s loadTime	// load time
       victim = P''s page
