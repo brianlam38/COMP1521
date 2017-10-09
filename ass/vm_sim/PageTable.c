@@ -89,10 +89,9 @@ void freeList(List l) {
 
 void initPageTable(int policy, int np)
 {
-   /*
-    * Init LRU and FIFO data structures
+   /* INIT LRU AND FIFO DATA STRUCTURES
     */
-   // init clock tick counters
+   // init clock tick start
    start_time = clock();
    printf("START TIME = %d\n", start_time);
    //List FIFO = newList();
@@ -144,7 +143,6 @@ int requestPage(int pno, char mode, int time)
       // Page not in memory, pageFault++
       countPageFault();
 
-
       // free frame exists in mem
       fno = findFreeFrame();
       // page replacement required, return pno (not fno)
@@ -158,6 +156,7 @@ int requestPage(int pno, char mode, int time)
          PTE *v = &PageTable[vno];
          fno = v->frame;
          // if modified, save frame, flip ON_DISK status
+         // NOTE: save is counted in saveFrame()
          if (v->modified == 1) {
             saveFrame(fno);
             v->status = ON_DISK;
@@ -174,6 +173,7 @@ int requestPage(int pno, char mode, int time)
       }
       printf("Page %d given frame %d\n",pno,fno);
       // clock load time, load page pno into frame fno
+      // NOTE: load is counted in loadFrame()
       int when = clock();
       loadFrame(fno, pno, when);
       // update PTE for page
@@ -191,11 +191,13 @@ int requestPage(int pno, char mode, int time)
       fprintf(stderr,"Invalid page status\n");  // if any other case, invalid page status and we should fix it
       exit(EXIT_FAILURE);
    }
-   // READ - update peek
-   if (mode == 'r')           // update peek
+   // READ - update peek, peekCtr++
+   if (mode == 'r')
+      countPeekRequest();
       p->nPeeks++;
-   // WRITE - update pokes + mod
+   // WRITE - update pokes + mod, pokeCtr++
    else if (mode == 'w') {
+      countPokeRequest();
       p->nPokes++;
       p->modified = 1;
    }
