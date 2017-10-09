@@ -127,20 +127,29 @@ void initPageTable(int policy, int np)
 
 int requestPage(int pno, char mode, int time)
 {
-   // Page number fits in a range of valid pages
+   // check if pno is within valid range
    if (pno < 0 || pno >= nPages) {
       fprintf(stderr,"Invalid page reference\n");
       exit(EXIT_FAILURE);
    }
-   PTE *p = &PageTable[pno];         // get page table entry
-   int fno; // frame number
+   // grab page entry
+   PTE *p = &PageTable[pno];
+   // declare frame no
+   int fno;
    switch (p->status) {
-   case NOT_USED:                   // if page has never been use before or currently saved to disk
+   // never been used or saved in disk
+   case NOT_USED:
    case ON_DISK:
-      // TODO: add stats collection
-      fno = findFreeFrame();        // if free frame is in memory, use that
-      if (fno == NONE) {            // else findVictim() -> what we have to write
-         int vno = findVictim(time);   //          -> returns PAGE no, NOT FRAME no
+      /* --- STATS COLLECTION --- */
+      // Page not in memory, pageFault++
+      countPageFault();
+
+
+      // free frame exists in mem
+      fno = findFreeFrame();
+      // page replacement required, return pno (not fno)
+      if (fno == NONE) {
+         int vno = findVictim(time);
 #ifdef DBUG
          printf("Evict page %d\n",vno);
 #endif
@@ -157,11 +166,9 @@ int requestPage(int pno, char mode, int time)
          if (v->status != ON_DISK) {
             v->status = NOT_USED;
          }
-         // no longer modified
+         // reset modified, fno, access/load times    // DOES ACCESS/LOAD TIME RESET TO NONE AFTER FREEING?
          v->modified = 0;
-         // no frame mapping
          v->frame = NONE;
-         // not accessed, not loaded         // DOES ACCESS/LOAD TIME RESET TO NONE AFTER FREEING?
          v->accessTime = NONE;
          v->loadTime = NONE;
       }
@@ -176,7 +183,7 @@ int requestPage(int pno, char mode, int time)
       p->loadTime = when;        // update loadTime
       break;
    case IN_MEMORY:
-      // TODO: add stats collection - POSSIBLY ADD OTHER STATS?
+      // TODO: add stats collection                   // POSSIBLY ADD OTHER STATS?
       // If page already in memorys, PageHit++, request complete
       countPageHit();
       break;
@@ -184,14 +191,18 @@ int requestPage(int pno, char mode, int time)
       fprintf(stderr,"Invalid page status\n");  // if any other case, invalid page status and we should fix it
       exit(EXIT_FAILURE);
    }
+   // READ - update peek
    if (mode == 'r')           // update peek
       p->nPeeks++;
-   else if (mode == 'w') {    // update pokes + modified
+   // WRITE - update pokes + mod
+   else if (mode == 'w') {
       p->nPokes++;
       p->modified = 1;
    }
-   p->accessTime = time;      // update access time
-   return p->frame;           // return FRAME (which is located in physical memory)
+   // update access time
+   p->accessTime = time;
+   // return fno
+   return p->frame;
 }
 
 // findVictim: find a page to be replaced
