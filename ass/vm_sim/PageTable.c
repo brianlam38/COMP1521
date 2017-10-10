@@ -71,7 +71,7 @@ void append(List l, int pno) {
 // global start time
 static int start_time;
 static List FIFO;
-//static List LRU;
+static List LRU;
 
 /*
  * For testing
@@ -116,7 +116,13 @@ void initPageTable(int policy, int np)
    // init start clock
    start_time = clock();
    // init page replacement data structures
-   FIFO = newList();
+   if (policy == REPL_FIFO) {
+      printf("POLICY = FIFO\n");
+      FIFO = newList();
+   } else if (policy == REPL_LRU) {
+      LRU = newList();
+      printf("POLICY = LRU\n");
+   }
    // init page table
    PageTable = malloc(np * sizeof(PTE));
    if (PageTable == NULL) {
@@ -146,7 +152,11 @@ int requestPage(int pno, char mode, int time)
 {
    // page number test
 #ifdef DBUG
-   showPageList(FIFO);
+   if (replacePolicy == REPL_FIFO) {
+      showPageList(FIFO);
+   } else if (replacePolicy == REPL_LRU) {
+      showPageList(LRU);
+   }
 #endif
    // check if pno is within valid range
    if (pno < 0 || pno >= nPages) {
@@ -200,8 +210,12 @@ int requestPage(int pno, char mode, int time)
          p->modified = 0;           // just loaded, not yet modified
          p->frame = fno;
          p->loadTime = when;
-         // update FIFO list w/ new tail
-         append(FIFO, pno);
+         // update FIFO or LRU list w/ new tail
+         if (replacePolicy == REPL_FIFO) {
+            append(FIFO, pno);
+         } else if (replacePolicy == REPL_LRU) {
+            append(LRU, pno);
+         }
          break;
       case IN_MEMORY:
          // PageHit++, request complete
@@ -234,15 +248,13 @@ static int findVictim(int time)
    switch (replacePolicy) {
    case REPL_LRU:
       // TODO: implement LRU strategy
-      // SETTING BITS (most recent -> least recent)
-      // 4. USED, MODIFIED
-      // 3. USED, NOT MODIFIED
-      // 2. NOT USED, MODIFIED
-      // 1. NOT USED, NOT MODIFIED
-      // When a page is referenced, mark referenced = 1
-      // When a page is modified, mark modified = 1
-      // When replacement is needed, grab lowest / least referenced class (not used, not modified)
-      //    Pick a page at random within that class
+      // Keep track of all pages in a queue
+      //    Most recently accessed page = tail of list.
+      //    Least accessed page = head of list.
+      // When replacement is needed, grab head of queue.
+
+      // If page is re-loaded, update access time and move to tail
+
 
 
       break;
