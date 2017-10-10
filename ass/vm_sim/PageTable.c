@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <time.h>
 #include "Memory.h"
 #include "Stats.h"
 #include "PageTable.h"
@@ -16,13 +15,13 @@
 #define IN_MEMORY 1
 #define ON_DISK 2
 
-/* --- LINKED LIST DATA STRUCTURE / FUNCTIONS --- */
+/* --- LRU / FIFO DATA STRUCTURES --- */
 
 typedef struct _node* Node;
 typedef struct _list* List;
 
 typedef struct _node {
-    int pno;      // page number
+    int pno;
     Node next;
 } node;
 
@@ -30,6 +29,32 @@ typedef struct _list {
     Node head;
     Node tail;
 } list;
+
+// global FIFO and LRU lists
+static List FIFO;
+static List LRU;
+
+/* --- PAGE TABLE DATA STRUCTURES --- */
+
+// Page Table Entry struct
+typedef struct {
+   char status;      // NOT_USED, IN_MEMORY, ON_DISK     in_mem = loaded | not_used / on_disk (if page contains initialised data) = not loaded
+   char modified;    // written or not since load
+   int  frame;       // frame holding this page
+   int  accessTime;  // clock tick for last access (most recently read/written)
+   int  loadTime;    // clock tick for last time loaded (last loaded)
+   int  nPeeks;      // #times read (how many times did we look at the page)
+   int  nPokes;      // #times modified (how many times did we write data into the page in memory)
+   // add more if needed
+} PTE;
+
+static PTE *PageTable;      // array of page table entries (ptr to first entry)
+static int  nPages;         // # entries in page table
+static int  replacePolicy;  // how to do page replacement
+static int findVictim(int); // private findVictim() function
+
+
+/* --- LRU / FIFO LIST METHODS --- */
 
 // create new list
 List newList(void) {
@@ -51,7 +76,7 @@ void freeList(List l) {
    }
    free(l);
 }
-// O(1) append node to list
+// Create new node + O(1) append to list tail
 void append(List l, int pno) {
    Node new = malloc(sizeof(node));
    new->pno = pno;
@@ -66,17 +91,7 @@ void append(List l, int pno) {
    }
 }
 
-/* --- LRU AND FIFO SPECIFIC FUNCTIONS --- */
-
-// global start time
-static int start_time;
-static List FIFO;
-static List LRU;
-
-/*
- * For testing
- * Show pages in current list
- */
+// Debugging: show pages in current list
 void showPageList(List l) {
    printf("--- SHOWING PAGES IN LIST ---\n");
    Node curr = l->head;
@@ -84,37 +99,52 @@ void showPageList(List l) {
       printf("NONE LOADED\n"); 
    }
    while (curr != NULL) {
-      printf("PAGE NO = %d\n", curr->pno);
+      printf("[%d]-", curr->pno);
       curr = curr->next;
    }
 }
 
-/* --- PAGE TABLE DATA --- */
-
-// Page Table Entry struct
-typedef struct {
-   char status;      // NOT_USED, IN_MEMORY, ON_DISK     in_mem = loaded | not_used / on_disk (if page contains initialised data) = not loaded
-   char modified;    // boolean: has it changed / been modified since page was loaded
-   int  frame;       // memory frame holding this page (where in memory is this process page located - IMPORTANT)
-   int  accessTime;  // clock tick for last access (most recently used)
-   int  loadTime;    // clock tick for last time loaded
-   int  nPeeks;      // total number times this page read (how many times did we look at the page)
-   int  nPokes;      // total number times this page modified (how many times did we write data into the page in memory)
-   // add more if needed
-} PTE;
-
-static PTE *PageTable;      // array of page table entries (ptr to first entry)
-static int  nPages;         // # entries in page table
-static int  replacePolicy;  // how to do page replacement
-static int findVictim(int); // private findVictim() function
+// Place recently accessed page to tail of list
+// POSSIBLE SOLUTION: JUST KEEP TRACK OF OLDEST AND MOST RECENT AND KEEP UPDATING IT. (probably cant work)
+void updateLRUList(int page) {
+   //printf("UPDATING PAGE = %d\n", page);
+   //printf("LRU->head->pno = %d\n", LRU->head->pno);
+   Node curr = LRU->head;
+   Node prev = NULL;
+   // find accessed page in LRU list
+   while (curr != NULL) {
+      //rintf("SCANNING THROUGH LIST\n");
+      // scan list for page
+      if (curr->pno == page) {
+         //printf("1. CORRECT PAGE, BEGIN UPDATE\n");
+         // if curr is head page
+         if (curr == LRU->head) {
+            //printf("LINK HEAD TO NEXT\n");
+            LRU->head = curr->next;
+            LRU->tail->next = curr;
+            LRU->tail = curr;
+            curr->next = NULL;
+         } else {
+            //printf("LINK PREV TO NEXT\n");
+            prev->next = curr->next;
+            LRU->tail->next = curr;
+            LRU->tail = curr;
+            curr->next = NULL;
+         }
+         //printf("4. DONE\n");
+         break;         
+      }
+      //printf("NOT PAGE, CHECK NEXT");
+      prev = curr;
+      curr = curr->next;
+   }
+}
 
 /* --- MAIN PAGE TABLE PROGRAM --- */
 
 /* Initialise Page Table data */
 void initPageTable(int policy, int np)
 {
-   // init start clock
-   start_time = clock();
    // init page replacement data structures
    if (policy == REPL_FIFO) {
       printf("POLICY = FIFO\n");
@@ -150,8 +180,9 @@ void initPageTable(int policy, int np)
  */
 int requestPage(int pno, char mode, int time)
 {
-   // page number test
+   //printf("PNO = %d --- MODE = %c\n", pno, mode);
 #ifdef DBUG
+   // show current list of pages
    if (replacePolicy == REPL_FIFO) {
       showPageList(FIFO);
    } else if (replacePolicy == REPL_LRU) {
@@ -163,9 +194,8 @@ int requestPage(int pno, char mode, int time)
       fprintf(stderr,"Invalid page reference\n");
       exit(EXIT_FAILURE);
    }
-   // grab page entry
+   // grab requested PTE
    PTE *p = &PageTable[pno];
-   // declare frame no
    int fno;
    switch (p->status) {
       case NOT_USED:
@@ -174,17 +204,18 @@ int requestPage(int pno, char mode, int time)
          countPageFault();
          // free frame exists
          fno = findFreeFrame();
-         // page replacement needed, target victim page
+         // page replacement needed
          if (fno == NONE) {
+            //printf(">> PAGE REPLACEMENT NEEDED\n");
+            // grab victim pno
             int vno = findVictim(time);
    #ifdef DBUG
             printf("Evict page %d\n",vno);
    #endif
-            // init entry to victim page
+            // grab victim PTE
             PTE *v = &PageTable[vno];
             fno = v->frame;
-            // if modified, save frame, flip ON_DISK status
-            // NOTE: save is counted in saveFrame()
+            // if modified, save frame
             if (v->modified == 1) {
                saveFrame(fno);
                v->status = ON_DISK;
@@ -198,16 +229,18 @@ int requestPage(int pno, char mode, int time)
             v->frame = NONE;
             v->accessTime = NONE;
             v->loadTime = NONE;
+         } else {
+            printf(">> FREE FRAME AVAILABLE\n");
          }
-         // load page
    #ifdef DBUG
          printf("Page %d given frame %d\n",pno,fno);
    #endif
-         int when = clock();
+         // load pno and time into frame
+         int when = time;
          loadFrame(fno, pno, when);
          // update PTE
          p->status = IN_MEMORY;
-         p->modified = 0;           // just loaded, not yet modified
+         p->modified = 0;
          p->frame = fno;
          p->loadTime = when;
          // update FIFO or LRU list w/ new tail
@@ -215,10 +248,12 @@ int requestPage(int pno, char mode, int time)
             append(FIFO, pno);
          } else if (replacePolicy == REPL_LRU) {
             append(LRU, pno);
+            showPageList(LRU);
          }
          break;
       case IN_MEMORY:
          // PageHit++, request complete
+         //printf(">> EXISTING FRAME\n");
          countPageHit();
          break;
    default:
@@ -227,23 +262,27 @@ int requestPage(int pno, char mode, int time)
    }
    // READ - update peek, peekCtr++
    if (mode == 'r') {
-      int accessed = clock();
-      p->accessTime = accessed;
       p->nPeeks++;
    // WRITE - update pokes + mod, pokeCtr++
    } else if (mode == 'w') {
-      int accessed = clock();
-      p->accessTime = accessed;
       p->nPokes++;
       p->modified = 1;
    }
    // update access time
    p->accessTime = time;
+   // update LRU list if policy = LRU && not just loaded
+   // (if page was just loaded, it would be in correct order at the tail)
+   if (replacePolicy == REPL_LRU && LRU->tail->pno != pno) {
+      //printf("UPDATING LRU LIST\n\n");
+      updateLRUList(pno);
+   } else {
+      //printf("JUST LOADED, LRU LIST UPDATE NOT NEEDED\n\n");
+   }
    return p->frame;
 }
 
 /* 
- * Find a page to be replaced
+ * Find a page to be replaced using selected repl policy
  * @return victim page no.
  */
 static int findVictim(int time)
@@ -258,9 +297,13 @@ static int findVictim(int time)
       // When replacement is needed, grab head of queue.
 
       // If page is re-loaded, update access time and move to tail
-
-
-
+      victim = LRU->head->pno;
+      // link to new head and rm old
+      Node currLru = LRU->head;
+      Node prevLru = currLru;
+      currLru = currLru->next;
+      LRU->head = currLru;
+      free(prevLru);
       break;
    case REPL_FIFO:
       // TODO: implement FIFO strategy
