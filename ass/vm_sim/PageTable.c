@@ -227,9 +227,13 @@ int requestPage(int pno, char mode, int time)
    }
    // READ - update peek, peekCtr++
    if (mode == 'r') {
+      int accessed = clock();
+      p->accessTime = accessed;
       p->nPeeks++;
    // WRITE - update pokes + mod, pokeCtr++
    } else if (mode == 'w') {
+      int accessed = clock();
+      p->accessTime = accessed;
       p->nPokes++;
       p->modified = 1;
    }
