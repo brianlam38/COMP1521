@@ -65,6 +65,17 @@ List newList(void) {
    return l;
 }
 
+// free list
+void freeList(List l) {
+   Node curr = l->head;
+   Node prev = NULL;
+   while (curr != NULL) {
+      prev = curr;
+      curr = curr->next;
+      free(prev);
+   }
+   free(l);
+}
 // Create new node + O(1) append to list tail
 void append(List l, int pno) {
    Node new = malloc(sizeof(node));
