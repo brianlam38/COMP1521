@@ -180,7 +180,6 @@ void initPageTable(int policy, int np)
  */
 int requestPage(int pno, char mode, int time)
 {
-   //printf("PNO = %d --- MODE = %c\n", pno, mode);
 #ifdef DBUG
    // show current list of pages
    if (replacePolicy == REPL_FIFO) {
