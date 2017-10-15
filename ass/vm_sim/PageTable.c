@@ -23,6 +23,7 @@ typedef struct _list* List;
 typedef struct _node {
     int pno;
     Node next;
+    Node prev;
 } node;
 
 typedef struct _list {
@@ -45,6 +46,7 @@ typedef struct {
    int  loadTime;    // clock tick for last time loaded (last loaded)
    int  nPeeks;      // #times read (how many times did we look at the page)
    int  nPokes;      // #times modified (how many times did we write data into the page in memory)
+   Node n;           // access to the respective node in the list
    // add more if needed
 } PTE;
 
@@ -66,18 +68,23 @@ List newList(void) {
 }
 
 // Create new node + O(1) append to list tail
-void append(List l, int pno) {
+Node append(List l, int pno) {
    Node new = malloc(sizeof(node));
    new->pno = pno;
+   new->prev = NULL;
    new->next = NULL;
    Node curr = l->tail;
    if (curr == NULL) {
       l->head = new;
       l->tail = new;
    } else {
+      // link forward
       curr->next = new;
       l->tail = new;
+      // link backward
+      new->prev = curr;
    }
+   return new;
 }
 
 // Debugging: show pages in current list
@@ -94,38 +101,23 @@ void showPageList(List l) {
 }
 
 // Place recently accessed page to tail of list
-void updateLRUList(int page) {
-   //printf("UPDATING PAGE = %d\n", page);
-   //printf("LRU->head->pno = %d\n", LRU->head->pno);
-   Node curr = LRU->head;
-   Node prev = NULL;
-   // find accessed page in LRU list
-   while (curr != NULL) {
-      //rintf("SCANNING THROUGH LIST\n");
-      // scan list for page
-      if (curr->pno == page) {
-         //printf("1. CORRECT PAGE, BEGIN UPDATE\n");
-         // if curr is head page
-         if (curr == LRU->head) {
-            //printf("LINK HEAD TO NEXT\n");
-            LRU->head = curr->next;
-            LRU->tail->next = curr;
-            LRU->tail = curr;
-            curr->next = NULL;
-         } else {
-            //printf("LINK PREV TO NEXT\n");
-            prev->next = curr->next;
-            LRU->tail->next = curr;
-            LRU->tail = curr;
-            curr->next = NULL;
-         }
-         //printf("4. DONE\n");
-         break;         
-      }
-      //printf("NOT PAGE, CHECK NEXT");
-      prev = curr;
-      curr = curr->next;
+void updateLRUList(PTE *p) {
+
+   // grab PTE respective node
+   Node curr = p->n;
+   // relink prev -> next nodes
+   if (curr != LRU->head) {
+      curr->prev->next = curr->next;
+      curr->next->prev = curr->prev;
+   } else {
+      LRU->head = curr->next;
+      LRU->head->prev = NULL;
    }
+   // link to tail
+   LRU->tail->next = curr;
+   curr->prev = LRU->tail;
+   curr->next = NULL;
+   LRU->tail = curr;
 }
 
 /* --- MAIN PAGE TABLE PROGRAM --- */
@@ -159,6 +151,7 @@ void initPageTable(int policy, int np)
       p->accessTime = NONE;
       p->loadTime = NONE;
       p->nPeeks = p->nPokes = 0;
+      p->n = NULL;
    }
 }
 
@@ -217,7 +210,7 @@ int requestPage(int pno, char mode, int time)
             v->accessTime = NONE;
             v->loadTime = NONE;
          } else {
-            printf(">> FREE FRAME AVAILABLE\n");
+            //printf(">> FREE FRAME AVAILABLE\n");
          }
    #ifdef DBUG
          printf("Page %d given frame %d\n",pno,fno);
@@ -231,15 +224,17 @@ int requestPage(int pno, char mode, int time)
          p->frame = fno;
          p->loadTime = when;
          // update FIFO or LRU list w/ new tail
+         // append new page to FIFO list
          if (replacePolicy == REPL_FIFO) {
             append(FIFO, pno);
+         // append new page to LRU list + link PTE to LRU list node
          } else if (replacePolicy == REPL_LRU) {
-            append(LRU, pno);
-            showPageList(LRU);
+            Node new = append(LRU, pno);
+            p->n = new;
+            //showPageList(LRU);
          }
          break;
       case IN_MEMORY:
-         // PageHit++, request complete
          //printf(">> EXISTING FRAME\n");
          countPageHit();
          break;
@@ -261,7 +256,7 @@ int requestPage(int pno, char mode, int time)
    // (if page was just loaded, it would be in correct order at the tail)
    if (replacePolicy == REPL_LRU && LRU->tail->pno != pno) {
       //printf("UPDATING LRU LIST\n\n");
-      updateLRUList(pno);
+      updateLRUList(p);
    } else {
       //printf("JUST LOADED, LRU LIST UPDATE NOT NEEDED\n\n");
    }
@@ -277,12 +272,6 @@ static int findVictim(int time)
    int victim = 0;
    switch (replacePolicy) {
    case REPL_LRU:
-      // TODO: implement LRU strategy
-      // Keep track of all pages in a queue
-      //    Most recently accessed page = tail of list.
-      //    Least accessed page = head of list.
-      // When replacement is needed, grab head of queue.
-
       // If page is re-loaded, update access time and move to tail
       victim = LRU->head->pno;
       // link to new head and rm old
@@ -293,18 +282,13 @@ static int findVictim(int time)
       free(prevLru);
       break;
    case REPL_FIFO:
-      // TODO: implement FIFO strategy
-      // Implement using a LIST (head and tail)
-      // Keep track of all pages in a queue
-      //    Most recent page = tail of list
-      //    Oldest arrival in memory = head of list
-      // When replacement is needed, grab head of the queue
-
       // O(1) operation to find victim pno
       victim = FIFO->head->pno;
       // link to new head and rm old
       Node curr = FIFO->head;
       Node prev = curr;
+      // H: -> A -> B -> C -> D -> X
+      // H:   ->    B -> C -> D -> X
       curr = curr->next;
       FIFO->head = curr;
       free(prev);
