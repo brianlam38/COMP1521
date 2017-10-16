@@ -26,28 +26,41 @@ int main(int argc, char *argv[], char *envp[])
    int stat;    // return status of child
    char **path; // array of directory names
 
-   // set up command PATH from environment variable
+   /* set up command PATH from environment variable */
+
+   // find enviro variable = PATH
    int i;
    for (i = 0; envp[i] != NULL; i++) {
       if (strncmp(envp[i], "PATH", 4) == 0) break;
    }
+   // non-existent enviro var PATH
    if (envp[i] == NULL)
       path = tokenise("/bin:/usr/bin",":");
+   // enviro var PATH
    else
       // &envp[i][5] ignores "PATH="
+      // split path by ":" delim
       path = tokenise(&envp[i][5],":");
 
+// --------------- DEBUGGING
 #ifdef DBUG
    for (i = 0; path[i] != NULL;i++)
       printf("dir[%d] = %s\n",i,path[i]);
 #endif
+// --------------- END DEBUGGING
 
-   // main loop: print prompt, read line, execute command
+   /* FORM MY OWN SHELL - main loop: print prompt, read line, execute command */
+
+   // shell line of size BUFSIZ (stdio.h defined value)
    char line[BUFSIZ];
+   // print shell name
    printf("mysh$ ");
+   // read from stdin and store in line
    while (fgets(line, BUFSIZ, stdin) != NULL) {
       trim(line); // remove leading/trailing space
+      // user quits shell
       if (strcmp(line,"exit") == 0) break;
+      // user enters nothing, load shell name again
       if (strcmp(line,"") == 0) { printf("mysh$ "); continue; }
 
       // TODO: implement the tokenise/fork/execute/cleanup code
@@ -87,6 +100,7 @@ int isExecutable(char *cmd)
    return 0;
 }
 
+// PRETTY MUCH @ARRAY = SPLIT("delimeter", $string) in perl
 // tokenise: split a string around a set of separators
 // create an array of separate strings
 // final array element contains NULL
