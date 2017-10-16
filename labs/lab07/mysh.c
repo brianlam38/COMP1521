@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-char *strdup(char *);
+char *strdup(const char *);
 void trim(char *);
 char **tokenise(char *, char *);
 void freeTokens(char **);
