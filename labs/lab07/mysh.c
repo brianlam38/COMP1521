@@ -52,6 +52,7 @@ int main(int argc, char *argv[], char *envp[])
    /* FORM MY OWN SHELL - main loop: print prompt, read line, execute command */
 
    // shell line of size BUFSIZ (stdio.h defined value)
+   // BUFSIZ = gcc default size of 1024 bytes?
    char line[BUFSIZ];
    // print shell name
    printf("mysh$ ");

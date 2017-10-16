@@ -260,21 +260,6 @@ Add statistics collection at appropriate points.
 Convert linear scans to appropriate lists.
 Do this for LRU and FIFO. Challenge: do Clock as well.
 
-// PROCESSES
-
-A process is an instance of an executing program.
--> 'Static info': program code and data
--> 'Dynamic state': heap, stack, registers, program counter
--> 'OS-supplied state': environment variables, stdin, stdout
-Process management forms a critical component of OS functionality.
-
-OS provides processes with:
--> 'Control-flow independence' - the process executes as if it is the only process running on the machine
--> 'Private address space' - the process has its own address space, possibly larger than physical memory
-
-
-
-
 
 
 
