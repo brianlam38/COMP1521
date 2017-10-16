@@ -86,19 +86,6 @@ Node append(List l, int pno) {
    return new;
 }
 
-// Debugging: show pages in current list
-void showPageList(List l) {
-   printf("--- SHOWING PAGES IN LIST ---\n");
-   Node curr = l->head;
-   if (curr == NULL) {
-      printf("NONE LOADED\n"); 
-   }
-   while (curr != NULL) {
-      printf("[%d]-", curr->pno);
-      curr = curr->next;
-   }
-}
-
 // O(1) Place recently accessed page to tail of list
 void updateLRUList(PTE *p) {
    // grab PTE respective node
@@ -125,11 +112,9 @@ void initPageTable(int policy, int np)
 {
    // init page replacement data structures
    if (policy == REPL_FIFO) {
-      printf("POLICY = FIFO\n");
       FIFO = newList();
    } else if (policy == REPL_LRU) {
       LRU = newList();
-      printf("POLICY = LRU\n");
    }
    // init page table
    PageTable = malloc(np * sizeof(PTE));
@@ -153,22 +138,9 @@ void initPageTable(int policy, int np)
    }
 }
 
-/* 
- * Request access to page pno in mode
- * @return frame for this page
- */
+/*  Request access to page pno in mode */
 int requestPage(int pno, char mode, int time)
 {
-/* EXTRA DEBUGGING STUFF
-#ifdef DBUG
-   // show current list of pages
-   if (replacePolicy == REPL_FIFO) {
-      showPageList(FIFO);
-   } else if (replacePolicy == REPL_LRU) {
-      showPageList(LRU);
-   }
-#endif
-*/
    // check if pno is within valid range
    if (pno < 0 || pno >= nPages) {
       fprintf(stderr,"Invalid page reference\n");
