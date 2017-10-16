@@ -22,9 +22,10 @@ void execute(char **, char **, char **);
 
 int main(int argc, char *argv[], char *envp[])
 {
-   //pid_t pid;   // pid of child process
-   //int stat;    // return status of child
+   pid_t pid;   // pid of child process
+   int stat;    // return status of child
    char **path; // array of directory names
+   char **args; // array of args
 
    /* set up command PATH from environment variable */
 
@@ -58,19 +59,31 @@ int main(int argc, char *argv[], char *envp[])
    printf("mysh$ ");
    // read from stdin and store in line
    while (fgets(line, BUFSIZ, stdin) != NULL) {
-      trim(line); // remove leading/trailing space
+      trim(line);                                              // remove leading/trailing space
       // user quits shell
       if (strcmp(line,"exit") == 0) {
          break;
-      }
-      // user enters nothing, load shell name again
+      } 
+      // user enters nothing, load shell name again            
       if (strcmp(line,"") == 0) {
          printf("mysh$ ");
          continue;
       }
-      printf("%s", line);
       // TODO: implement the tokenise/fork/execute/cleanup code
-
+      args = tokenise(line, ":");  // tokenise the command
+      pid = fork();                // create a new/child process and grab its pid
+      // parent shell waits for child to complete
+      if (pid != 0) {
+         waitpid(pid, &stat, 0);  // pause until pid changes state
+      // child process invokes execute()
+      } else {
+         printf("EXECUTE SHIT");
+         execute(args, path, envp);
+         // finishing, exit success
+         exit(0);
+      }
+      // cleans up tokens and prints another prompt
+      freeTokens(path);
       printf("mysh$ ");
    }
    printf("\n");
@@ -81,6 +94,17 @@ int main(int argc, char *argv[], char *envp[])
 void execute(char **args, char **path, char **envp)
 {
    // TODO: implement the find-the-executable and execve() it code
+   char cmd;
+   if ((strcmp(args[0],"/") == 0) || (strcmp(args[0],".") == 0)) {
+      if (isExecutable(args[0])) {
+         cmd = *args[0];
+      }
+   } else {
+      printf(" DO SHIT HERE ");
+      for (int i = 0; i < '\0'; i++) {
+         printf("PATH = %s\n", path[i]);
+      }
+   }
 }
 
 // isExecutable: check whether this process can execute a file
