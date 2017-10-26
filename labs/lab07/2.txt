@@ -1,0 +1,18 @@
+   char *command = NULL;
+   char *arg0 = args[0];
+   if (arg0[0] == '/' || arg0[0] == '.') {
+      if (isExecutable(args[0])) {
+         command = args[0];
+      }
+   } else {
+      for (int i = 0; path[i] != NULL; i++) {
+         char *cmd = malloc(strlen(args[0]) + strlen(path[i])+1);
+         strcpy(cmd, path[i]);   // "dir"
+         strcpy(cmd, "/");       // "/"
+         strcpy(cmd, args[0]);   // "args[0"
+         if (isExecutable(cmd)) {
+            command = cmd;
+            break;
+         }
+      }
+   }
