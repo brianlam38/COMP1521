@@ -21,58 +21,60 @@ char *groupname(gid_t, char *);
 
 int main(int argc, char *argv[])
 {
-   // string buffers for various names
-   char dirname[MAXDIRNAME];
-   char uname[MAXNAME+1]; // UNCOMMENT this line
-   char gname[MAXNAME+1]; // UNCOMMENT this line
-   char mode[MAXNAME+1]; // UNCOMMENT this line
+    // string buffers for various names
+    char dirname[MAXDIRNAME];
+    char uname[MAXNAME+1]; // UNCOMMENT this line
+    char gname[MAXNAME+1]; // UNCOMMENT this line
+    char mode[MAXNAME+1]; // UNCOMMENT this line
 
-   // collect the directory name, with "." as default
-   if (argc < 2)
+    // collect the directory name, with "." as default
+    if (argc < 2)
       strlcpy(dirname, ".", MAXDIRNAME);
-   else
+    else
       strlcpy(dirname, argv[1], MAXDIRNAME);
 
-   // check that the name really is a directory
-   struct stat info;
-   if (lstat(dirname, &info) < 0)
-      { perror(argv[0]); exit(EXIT_FAILURE); }
-   if ((info.st_mode & S_IFMT) != S_IFDIR)
-      { fprintf(stderr, "%s: Not a directory\n",argv[0]); exit(EXIT_FAILURE); }
+    // check that the name really is a directory
+    struct stat info;
+    if (lstat(dirname, &info) < 0)
+       { perror(argv[0]); exit(EXIT_FAILURE); }
+    if ((info.st_mode & S_IFMT) != S_IFDIR)
+       { fprintf(stderr, "%s: Not a directory\n",argv[0]); exit(EXIT_FAILURE); }
 
-   // open the directory to start reading       // BRIAN COMMENTS
-   DIR *df;                                     // 1. Declare DIR object
-   df = opendir(argv[1]);                       // 2. opendir() opens the dir by filename, associates a dir stream
+    // open the directory to start reading       // BRIAN COMMENTS
+    DIR *df;                                     // 1. Declare DIR object
+    df = opendir(argv[1]);                       // 2. opendir() opens the dir by filename, associates a dir stream
                                                 //    with it and returns a pointer to the directory stream.
 
-   // read directory entries
-   struct dirent *entry;                        // 1. Declare a Dirent struct, a special struct used to return info about dir entries
-   while ((entry = readdir(df)) != NULL) {      // 2. readdir() returns a ptr to the next dir entry.
+    // read directory entries
+    struct dirent *entry;                        // 1. Declare a Dirent struct, a special struct used to return info about dir entries
+    while ((entry = readdir(df)) != NULL) {      // 2. readdir() returns a ptr to the next dir entry.
                                                 //    returns NULL at the end of the directory
-      // if object is '.' skip
+      // ignore if object is '.'
       if (strcmp(entry->d_name,".") == 0) continue;
+
+      // fill meta-data from entry into stat info
       lstat(entry->d_name, &info);
 
-      rwxmode(info.st_mode, mode);              // grab mode / type
-      printf("MODE = %s\n", mode);         
+      // grab read write permissions
+      mode_t ModeInfo = info.st_mode;
+      rwxmode(ModeInfo, mode);
+      printf("READ/WRITE PERM MODE = %s\n", mode);           
 
-      username(info.st_uid, uname);                // grab name of owner
-      printf("UNAME = [%s]\n", uname);
+      printf("==============================\n");
 
-      groupname(info.st_gid, gname);               // grab name of group
-      printf("GNAME = [%s]\n", gname);
+      printf("%s  %-8.8s %-8.8s %8lld  %s\n",
+        rwxmode(info.st_mode, mode),     // rwx mode
+        username(info.st_uid, uname),   // user
+        groupname(info.st_gid, gname),  // group
+        info.st_size,                 // file size
+        entry->d_name);                 // name of file
 
-      printf("SIZE = [%lld]\n", info.st_size);     // grab file size
-      printf("OBJ NAME = [%s]\n", entry->d_name);  // grab name of file
-      printf("\n");
-   }                                            // 3. Loo through each entry and print struct value.
-                                                //    d_name[] is a struct component: a null-terminated file name
+      printf("==============================\n");
+    }
 
-
-
-   // finish up
-   closedir(df);                                // 1. Close DIR object.
-   return EXIT_SUCCESS;
+    // Close DIR * file pointer object
+    closedir(df);
+    return EXIT_SUCCESS;
 }
 
 // convert octal mode to -rwxrwxrwx string
@@ -87,16 +89,16 @@ char *rwxmode(mode_t mode, char *str)
     // mode & IFMT -> remove lower bits to determine file type
     if ((mode & S_IFMT) == S_IFDIR) {            
         str[0] = 'd';
-        printf("directory\n");
+        //printf("directory\n");
     } else if ((mode & S_IFMT) == S_IFREG) {
         str[0] = '-';
-        printf("regular file\n");
+        //printf("regular file\n");
     } else if ((mode & S_IFMT) == S_IFLNK) {
         str[0] = '1';
-        printf("symbolic link\n");
+        //printf("symbolic link\n");
     } else {
         str[0] = '?';
-        printf("OTHER\n");
+        //printf("OTHER\n");
     }
 
     // Mask mode code with 0x1FF (0b111111111) to cut out last 3 octal permission digits
@@ -151,7 +153,7 @@ char *rwxmode(mode_t mode, char *str)
         }
     }
 
-    printf("RWX = %s\n", string);
+    //printf("RWX = %s\n", string);
 
 
 
