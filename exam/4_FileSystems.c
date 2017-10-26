@@ -87,7 +87,7 @@ Common operations:
 	off_t lseek(int FileDesc, off_t Offset, int Whence)     ... move offset / position within a file
 // Getting meta-data
 	int stat(char *FileName, struct stat *statBuf)          ... get meta-data about a file system object
-	int fstat(int FileDescr, struct stat *statBuf)			... same as stat() except gets data via. an open fd
+	int lstat(int FileDescr, struct stat *statBuf)			... same as stat() except gets data via. an open fd
 
 File stat structure:
 	struct stat {

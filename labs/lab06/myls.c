@@ -102,12 +102,15 @@ char *rwxmode(mode_t mode, char *str)
 
     // Mask mode code with 0x1FF (0b111111111) to cut out last 3 octal permission digits
     unsigned mask = 0x1FF;
+    printf("MASK = %o\n", mask);
+    printf("MODE = %o\n", mode);
     unsigned bits = mode & mask;
+    printf("BITS = %o\n", bits);
 
     // bits & mask, then bitshift 3 positions to remove extra 0's
-    unsigned owner = bits & 0x07;           // 0b111
-    unsigned group = (bits & 0x38) >> 3;    // 0b111111
-    unsigned other = (bits & 0x1C0) >> 6;   // 0b111111111
+    unsigned owner = bits & 0x07;           // 0x07  = 0b111
+    unsigned group = (bits & 0x38) >> 3;    // 0x38  = 0b111111
+    unsigned other = (bits & 0x1C0) >> 6;   // 0x1C0 = 0b111111111
     //printf("owner = %o\n", owner);
     //printf("group = %o\n", group);
     //printf("other = %o\n", other);
