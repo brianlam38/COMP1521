@@ -93,42 +93,37 @@ int main(int argc, char *argv[], char *envp[])
 // execute: run a program, given command-line args, path and envp
 void execute(char **args, char **path, char **envp)
 {
-   // TODO: implement the find-the-executable and execve() it code
+   // final command string
    char *command = NULL;
-   char *arg0 = args[0];
-   if (arg0[0] == '/' || arg0[0] == '.') {
-      // cmd = args[0]
-      if (isExecutable(args[0])) {
-         command = args[0];
-      }
+   // grab first char of arg
+   char *arg = args[0];
+   // form command string
+   if ((arg[0] == '/') || (arg[0] == '.')) {
+      if (isExecutable(args[0])) command = args[0];
    } else {
+      // search for an executable file
       for (int i = 0; path[i] != NULL; i++) {
          char *cmd = malloc(strlen(args[0]) + strlen(path[i])+1);
          strcpy(cmd, path[i]);   // "dir"
          strcat(cmd, "/");       // "/"
          strcat(cmd, args[0]);   // "args[0"
+         // found executable file, set command as file name
          if (isExecutable(cmd)) {
             command = cmd;
             break;
          }
       }
    }
-
-
-
-
-
+   // Command is non-existent
    if (command == NULL) {
       printf("Command not found\n");
+   // Command exists, execute the program
    } else {
-      printf("Executing %s\n", command);
-      printf("envp: %s\n", *envp);
+      printf("%s\n", command);
       int stat = execve(command, args, envp);
-      if(stat == -1){
-        perror("Exec failed");
-     }
+      // execution failed
+      if(stat == -1) perror("Exec failed");
    }
-   _Exit(EXIT_SUCCESS);
 }
 
 // isExecutable: check whether this process can execute a file
