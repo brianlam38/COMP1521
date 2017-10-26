@@ -85,9 +85,10 @@ Common operations:
 	ssize_t read(int FileDescr, void *Buffer, size_t Count) ... read bytes into a buffer from a fd
 	ssize_t write(int FileDesc, void *Buffer, size_t Count) ... write bytes from a buffer to a fd
 	off_t lseek(int FileDesc, off_t Offset, int Whence)     ... move offset / position within a file
+															'lseek() can be used to access i^th struct via.' i*sizeof(StructType)
 // Getting meta-data
-	int stat(char *FileName, struct stat *statBuf)          ... get meta-data about a file system object
-	int lstat(int FileDescr, struct stat *statBuf)			... same as stat() except gets data via. an open fd
+	int lstat(char *FileName, struct stat *statBuf)          ... get meta-data about a file system object
+	int fstat(int FileDescr, struct stat *statBuf)			... same as stat() except gets data via. an open fd
 
 File stat structure:
 	struct stat {
@@ -105,8 +106,6 @@ File stat structure:
 	   time_t    st_mtime;   // time of last modification
 	   time_t    st_ctime;   // time of last status change
 	};
-
-
 
 'WRITE()' vs 'PRINTF()' usage:
 // struct
@@ -129,6 +128,14 @@ File stat structure:
 	vs
 	fscanf(inf, "%d:[^:]:%f\n", &(stu.id), &(stu.name), &(stu.wam));
 
+OTHER OPERATIONS:
+	int mkdir(char *PathName, mode_t Mode) ... PathName is a/b/d
+										   ... Mode is permissions
+
+	int fsync(int FileDesc)				   ... Writing instantly to storage with data from FD
+
+	int mount(char *Source, char *Target,  ... Attaches a file to a specific location
+		char *FileSysType, unsigned long Flags, void *data)
 
 
 

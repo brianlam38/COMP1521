@@ -33,8 +33,8 @@ GENERAL APPROACH: Assuming you are given a struct of records etc. and you need t
 
 FUNCTIONS TO USE:
 // Getting meta-data
-	int stat(char *FileName, struct stat *statBuf)  ... get meta-data about a file system object
-	int lstat(int FileDescr, struct stat *statBuf)	... same as stat() but gets data via. an open fd
+	int lstat(char *FileName, struct stat *statBuf)  ... get meta-data about a file system object
+	int fstat(int FileDescr, struct stat *statBuf)	 ... same as stat() but gets data via. an open fd
 // A struct record of sorts
 	typedef struct _student {
 	    int id; char name[99]; float wam;
@@ -50,4 +50,12 @@ FUNCTIONS TO USE:
 // Usage - file pointer operations (fd)
 	fprintf(FILE *stream, "%s %d %lld", val_str, val_int, val_long)   ... print bytes from stu struct to the FILE * output stream.
 	fscanf(FILE *stream, "%s %d %lld", &val_str, &val_int, &val_long) ... read from FILE * input stream into the stu struct
+
+
+
+
+
+
+
+
 
