@@ -57,10 +57,9 @@ int main(int argc, char *argv[])
 
       // grab read write permissions
       mode_t ModeInfo = info.st_mode;
-      rwxmode(ModeInfo, mode);
-      printf("READ/WRITE PERM MODE = %s\n", mode);           
+      rwxmode(ModeInfo, mode);       
 
-      printf("==============================\n");
+      //printf("==============================\n");
 
       printf("%s  %-8.8s %-8.8s %8lld  %s\n",
         rwxmode(info.st_mode, mode),     // rwx mode
@@ -69,7 +68,7 @@ int main(int argc, char *argv[])
         info.st_size,                 // file size
         entry->d_name);                 // name of file
 
-      printf("==============================\n");
+      //printf("==============================\n");
     }
 
     // Close DIR * file pointer object
@@ -81,7 +80,7 @@ int main(int argc, char *argv[])
 char *rwxmode(mode_t mode, char *str)
 {   
 
-    printf("OCTAL MODE = %o\n", mode);
+    //printf("OCTAL MODE = %o\n", mode);
 
     // Bitwise & operations to determine file type
     // S_IFMT = octal code for "Type of file"
@@ -104,57 +103,79 @@ char *rwxmode(mode_t mode, char *str)
     // Mask mode code with 0x1FF (0b111111111) to cut out last 3 octal permission digits
     unsigned mask = 0x1FF;
     unsigned bits = mode & mask;
-    printf("%o\n", bits); 
 
     // bits & mask, then bitshift 3 positions to remove extra 0's
     unsigned owner = bits & 0x07;           // 0b111
     unsigned group = (bits & 0x38) >> 3;    // 0b111111
     unsigned other = (bits & 0x1C0) >> 6;   // 0b111111111
-    printf("owner = %o\n", owner);
-    printf("group = %o\n", group);
-    printf("other = %o\n", other);
+    //printf("owner = %o\n", owner);
+    //printf("group = %o\n", group);
+    //printf("other = %o\n", other);
 
-    int o_r = 1;
-    int o_w = 2;
-    int o_x = 3;
-    int g_r = 4;
-    int g_w = 5;
-    int g_x = 6;
-    int ot_r = 7;
-    int ot_w = 8;
-    int ot_x = 9;
+    int init_pos = 0;
+    int owner_pos = 0;
+    int group_pos = 3;
+    int other_pos = 6;
 
-    char string[10];
-    unsigned main;
-    main = owner;
-    int m_r = o_r;
-    int m_w = o_w;
-    int m_x = o_x;
-    unsigned lol = main & 4;
-    printf("lol = %o", lol);
     for (int i = 0; i < 3; i++) {
-        if ((main & 1) == 1) string[m_x] = 'x';
-        if ((main & 2) == 2) string[m_w] = 'w';
-        if ((main & 3) == 3) { string[m_w] = 'w'; string[m_x] = 'x'; }
-        if ((main & 4) == 4) string[m_r] = 'r';
-        if ((main & 5) == 5) { string[m_r] = 'r'; string[m_x] = 'x'; }
-        if ((main & 6) == 6) { string[m_r] = 'r'; string[m_w] = 'w';}
-        if (i == 1) {
-            main = group;
-            m_r = g_r;
-            m_w = g_w;
-            m_x = g_x;
-        }
-        if (i == 2) {
-            main = other;
-            m_r = ot_r;
-            m_w = ot_w;
-            m_x = ot_x;           
-        }
+      unsigned type;
+      unsigned type_pos;
+      if (i == 0) {
+        type = owner;
+        type_pos = owner_pos;
+      }
+      if (i == 1) {
+        type = group;
+        type_pos = group_pos;
+      }
+      if (i == 2) {
+        type = other;
+        type_pos = other_pos;
+      }
+      int true_pos = init_pos + type_pos;
+      switch (type) {
+        case 0:
+          str[1 + true_pos] = '-';
+          str[2 + true_pos] = '-';
+          str[3 + true_pos] = '-';
+          break;
+        case 1:
+          str[1 + true_pos] = '-';
+          str[2 + true_pos] = '-';
+          str[3 + true_pos] = 'x';
+          break;
+        case 2:
+          str[1 + true_pos] = '-';
+          str[2 + true_pos] = 'w';
+          str[3 + true_pos] = '-';
+          break;
+        case 3:
+          str[1 + true_pos] = '-';
+          str[2 + true_pos] = 'w';
+          str[3 + true_pos] = 'x';
+          break;
+        case 4:
+          str[1 + true_pos] = 'r';
+          str[2 + true_pos] = '-';
+          str[3 + true_pos] = '-';
+          break;
+        case 5:
+          str[1 + true_pos] = 'r';
+          str[2 + true_pos] = '-';
+          str[3 + true_pos] = 'x';
+          break;
+        case 6:
+          str[1 + true_pos] = 'r';
+          str[2 + true_pos] = 'w';
+          str[3 + true_pos] = '-';
+          break;
+        case 7:
+          str[1 + true_pos] = 'r';
+          str[2 + true_pos] = 'w';
+          str[3 + true_pos] = 'x';
+          break;
+      }      
     }
-
-    //printf("RWX = %s\n", string);
-
 
 
 //----------  0000    no permissions
