@@ -117,6 +117,24 @@ Signals from 'external process events'   ... 'SIGINT | SIGPIPE | SIGCHLD | SIGTS
 
 ====== 'SIGNAL HANDLERS' ======
 SIGNAL HANDLER = a function invoked in response to a signal.
+-> Should know which signal it was invoked by
+-> Ensures that invoking signal is blocked
+-> Carries out appropriate action
+(see diagram)
+
+Signal handlers:
+	// Associates a handler with a signal
+	int sigaction(int Signal, SigActStruct Action, ...)
+		SigActStruct = struct sigaction {
+			sa_handler   ... ptr to signal handling function
+			sa_sigaction ... ptr to alternate handling function
+			sa_mask		 ... set of signals to be blocked in handler
+			sa_flags	 ... modifiers (e.g. dont block invoking signal)
+		}
+	// Takes in a single argument (the invoking signal)
+	void (*sa_handler)(int)
+	// First arg is invoking signal, others are context info (e.g uid)
+	void (*sa_sigaction)(int, siginfo_t *, void *)
 
 
 
