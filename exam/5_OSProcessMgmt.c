@@ -48,7 +48,17 @@ Examples of process-related sys calls:
 															returns on child state change: 'exiting, sending signal etc.'
 	int kill(pid_t pid, int sig) 						... 'send a signal' to a specific process or process group
 
-	
+	int execve(char *Path, char *Argv[], char *Envp)	... Replaces current process by executing an Object
+		'Path' must be an executable, binary, script '#!/usr/'
+		Passes arrays of strings to a new process.
+			-> Both arrays terminated by a NULL ptr.
+			-> envp[] contains strings fo the form key=value
+		State of the original process is lost.
+		New process inherits open file descriptors from original process.
+		On error, returns -1 and sets 'errno' (read msg via. strerror(errno)) | If successful, does NOT return
+
+
+
 
 
 
