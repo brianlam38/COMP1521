@@ -5,9 +5,9 @@
 #include <sys/wait.h>
 
 int main(void)
-{
-   pid_t pid;
-   int stat;
+{  
+   pid_t pid;   // process ID
+   int stat;    // status
 
    printf("Parent process starts ...\n");
    if ((pid = fork()) != 0) {
@@ -21,13 +21,17 @@ int main(void)
       char *args[100];      // cmd line args
       char *envs[1];        // no env vars
       printf("Give me the argv list (1 per line):\n");
+      // until '\n', read 50 bytes from stdin and store in line.
       while (fgets(line, 50, stdin) != NULL) {
-         line[strlen(line)-1] = '\0'; // strip '\n'
+         //
+         line[strlen(line)-1] = '\0';
+         // copy line str and return a ptr to it.
          args[i++] = strdup(line);
       }
-      args[i] = NULL;
-      envs[0] = NULL;
-	  stat = execve(args[0], args, envs);
+      args[i] = NULL; // strip
+      envs[0] = NULL; // passes no envp[] values
+      // invoke the program, return status
+	   stat = execve(args[0], args, envs);
       // only reach here if exec fails
       perror("Exec failed");
    }

@@ -57,6 +57,70 @@ Examples of process-related sys calls:
 		New process inherits open file descriptors from original process.
 		On error, returns -1 and sets 'errno' (read msg via. strerror(errno)) | If successful, does NOT return
 
+====== 'SIGNALS + INTERRUPTS + MULTI-TASKING + SCHEDULING' ======
+A signal is a notification sent to a process or to a specific thread within the same process to tell it that an event occurred.
+
+Signals can be generated from multiple sources.
+-> From kill(), operating sys timer(), i/o device.
+
+Processes can define how they want to handle signals using:
+
+	signal(int SigID, sighandler_t Handler)		... Handler can be 'SIG_IGN', 'SIG_DFL' or a function
+													'SigID' is one of the OS-defined signals.
+
+'Interrupts' are signals which cause normal process execution to be suspended.
+-> A 'handler' carries out tasks related to the interrupt.
+-> Control is then returned to the original process.
+
+Single process example:
+1. Process starts a disk I/O operation - i.e. read a block of data
+2. Process then carries out in-memory computations.
+3. When data is fetched from disk, process is interrupted.
+4. Data is placed in a buffer for later access by the process.
+5. In-memory computation resumes.
+
+'In-memory computations' are fast = nano-seconds
+'I/O computations' are slow = milli-seconds
+
+OLD WAY: Process invokes I/O --> wait 100ms --> continue process = 'SINGLE-PROCESS'
+NEW WAY: Process invokes I/O --> run another process -> continue process = 'MULTI-TASKING'
+
+'MULTI-TASKING'
+-> Have a mixture of processes: some are ready to execute, some are blocked awaiting I/O completion
+-> Switch between processes for a defined 'time slice'.
+-> After timer counts down, current process is 'pre-empted'
+-> A new process is selected to run by the 'system scheduler'
+
+'SCHEDULING' - Selecting which process should run next.
+-> Processes are organised in a Priority Queue. Highest = head of queue.
+-> Factors to determine this:
+	System processes > normal processes
+	Newer processes > older processes
+	Less-memory intense > more memory intense
+	Some processes suggest their own priority: (highest) 0 --> 100+ (lowest)
+
+'OS Scheduler' abstract view:
+	onTimerInterrupt() {
+		save state of currently executing process
+		newPID = dequeue(runnableProcessesQueue)
+		setup state of newPID e.g. load pages
+		transfer control to newPID
+	}
+
+Process information is stored in a 'process control block'
+-> process identification data: 'pid, ppid, pgid, uid, gid ...'
+-> process state data: 			'registers, stack, heap, page table ...'
+-> process control data: 		'scheduling state/priority, open files ...'
+
+
+
+
+
+
+
+
+
+
 
 
 
