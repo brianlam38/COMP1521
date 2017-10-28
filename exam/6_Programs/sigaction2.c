@@ -13,7 +13,8 @@
 void handler (int sig)
 {
    printf ("Invalid memory reference!!\n");
-   exit(1);
+
+   exit(1);   // exit(1) = EXIT_FAILURE, exit(0) = EXIT_SUCCESS
 }
  
 int main (int argc, char *argv[])
@@ -32,7 +33,8 @@ int main (int argc, char *argv[])
       perror ("sigaction");
       return EXIT_FAILURE;
    }
- 
+   
+   // testing out triggering of segmentation fault -> sending a SIGSEV signal which should be caught
    int *p = NULL;
    *p = 3;
  

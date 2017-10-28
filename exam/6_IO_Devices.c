@@ -122,12 +122,12 @@ SIGNAL HANDLER = a function invoked in response to a signal.
 -> Carries out appropriate action
 (see diagram)
 
-Signal handler program:
+Signal handler interface:
 
 	struct sigaction {
 		void 		(*sa_handler)(int)   					  ... ptr to signal handling function
 		void 		(*sa_sigaction)(int, siginfo_t *, void *) ... ptr to alternate handling function
-		sigset_t	sa_mask		 							  ... set of signals to be blocked in handler
+		sigset_t	sa_mask		 							  ... identifies signals to be blocked in handler
 		int 		sa_flags	 							  ... modifiers (e.g. dont block invoking signal)
 	}
 
@@ -138,23 +138,44 @@ Signal handler program:
 	usage of struct:
 		int sigaction(int sig, SigActStruct act, NULL)	-> sigaction(SIGTERM, &act, NULL)
 		-> Assigns an action act for a signal int sig.
-		// Associates a handler with a signal
-		// OR sets SIG_DFL - informs kernal to take the Default Action
-		//      or SIG_IGN - signal is ignored
 
 Steps for producing signal handler program:
 
-1. Create a void handler(int signal) function
+1. Create your own function for signal handler behaviour:
+   -> void handler(int signal)
    -> Used to catches the exception/signal
+
 2. In main()
    -> Declare { struct sigaction act } object + initialise it to '\0'
    -> memset(&act, '\0', sizeof(act))
-3. Passing address of handler() function to sigaction signal handler "this is the fn that will handle any signals"
-   -> '1 handler arg'   : act.sa_handler = &handler
-   -> '>1 handler args' : act.sa_sigaction = &handler
+
+3. Passing address of handler() function to sigaction signal handler "when a signal occurs, the handler() function will be executed"
+   -> '1 handler arg'   	: act.sa_handler = &handler    - set your own behaviour -
+   -> '>1 handler args' 	: act.sa_sigaction = &handler  - set your own behaviour -
+   -> 'take default action' : act.sa_sigaction = SIG_DFL   - stake default behaviour -
+   -> 'ignore signal'		: act.sa_sigaction = SIG_IGN   - ignore the signal entirely / program keeps running -
+
 4. Set up signal handler
    -> sigaction(SIGUP, &act, NULL)
    -> sigaction(SIGTERM, &act, NULL)
+
+5. If signal handler fails:
+    if (sigaction(SIGHUP, &act, NULL) < 0) {
+       perror ("sigaction");
+       return EXIT_FAILURE;
+    }
+
+Optional things for signal handler program:
+// Blocking certain signal
+-> 'Blocking signals'  	 : act.sa_mask = SIGTERM    - block the SIGTERM signal -
+
+// Information about the current process
+-> 'Information request' : act.sa_sigaction = &hander    1. set sa_sigaction instead of sa_handler
+    		 			 : act.sa_flags = SA_SIGINFO     2. set SA_SIGINFO flag
+	You can now access signal info via. struct siginfo_t { }
+
+
+
 
 
 
