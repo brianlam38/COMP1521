@@ -1,5 +1,5 @@
 // Example of using sigaction() to set up
-// a signal handler with 3 arguments including siginfo_t
+// a signal handler
  
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,32 +7,34 @@
 #include <signal.h>
 #include <string.h>
  
-void handler (int sig, siginfo_t *siginfo, void *context)
+// Write a signal handler that catches SEGV (segfault) when an invalid memory reference occurs
+
+// Signal handler with 1 signal arg
+void handler (int sig)
 {
-   printf ("PID: %ld, UID: %ld\n",
-         (long)siginfo->si_pid, (long)siginfo->si_uid);
+   printf ("Invalid memory reference!!\n");
+   exit(1);
 }
  
 int main (int argc, char *argv[])
 {
+   // create sigaction object
    struct sigaction act;
  
+   // set sigaction object = 0 -> initialising to 0
    memset (&act, '\0', sizeof(act));
  
    // Use the sa_sigaction field because
    // the handler has two additional parameters
-   act.sa_sigaction = &handler;
- 
-   // The SA_SIGINFO flag tells sigaction() to use
-   // the sa_sigaction field, not sa_handler
-   act.sa_flags = SA_SIGINFO;
- 
-   if (sigaction(SIGTERM, &act, NULL) < 0) {
+   act.sa_handler = &handler;  // <- pass in handler function
+
+   if (sigaction(SIGSEGV, &act, NULL) < 0) {
       perror ("sigaction");
       return EXIT_FAILURE;
    }
  
-   while (1) sleep (10);
+   int *p = NULL;
+   *p = 3;
  
    return EXIT_SUCCESS;
-}
+} 

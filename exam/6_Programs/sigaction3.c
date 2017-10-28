@@ -1,16 +1,19 @@
 // Example of using sigaction() to set up
-// a signal handler
+// a signal handler with 3 arguments including siginfo_t
  
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+
+// Write a signal handler that catches TERM, but uses a sa_sigaction to show uid.
  
-void handler (int sig)
+// Handler with 3 args including siginfo_t
+void handler (int sig, siginfo_t *siginfo, void *context)
 {
-   printf ("Invalid memory reference!!\n");
-   exit(1);
+   printf ("PID: %ld, UID: %ld\n",
+         (long)siginfo->si_pid, (long)siginfo->si_uid);
 }
  
 int main (int argc, char *argv[])
@@ -21,15 +24,18 @@ int main (int argc, char *argv[])
  
    // Use the sa_sigaction field because
    // the handler has two additional parameters
-   act.sa_handler = &handler;
-
-   if (sigaction(SIGSEGV, &act, NULL) < 0) {
+   act.sa_sigaction = &handler;
+ 
+   // The SA_SIGINFO flag tells sigaction() to use
+   // the sa_sigaction field, not sa_handler
+   act.sa_flags = SA_SIGINFO;
+ 
+   if (sigaction(SIGTERM, &act, NULL) < 0) {
       perror ("sigaction");
       return EXIT_FAILURE;
    }
  
-   int *p = NULL;
-   *p = 3;
+   while (1) sleep (10);
  
    return EXIT_SUCCESS;
-} 
+}
