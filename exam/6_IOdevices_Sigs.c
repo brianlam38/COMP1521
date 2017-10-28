@@ -115,6 +115,10 @@ Many exceptions occur via. signals and signals can be handled in a variety of wa
 Signals from 'internal process activity' ... 'SIGILL | SIGABRT | SIGFPE  | SIGSEGV' 	   -> handled by "create core image" core dump + terminate
 Signals from 'external process events'   ... 'SIGINT | SIGPIPE | SIGCHLD | SIGTSTP/ctrl-z' -> REFER TO "DEFAULT ACTION" to see how all signals are handled
 
+^ The above are all examples of LOW-LEVEL exception handling.
+-> Exceptions are also required in software computation
+-> C does not provide exception handling 'PYTHON try { code } catch { handleFailures }', so we need to create our own handler() function
+
 ====== 'SIGNAL HANDLERS' ======
 SIGNAL HANDLER = a function invoked in response to a signal.
 -> Should know which signal it was invoked by
@@ -173,8 +177,6 @@ Optional things for signal handler program:
 -> 'Information request' : act.sa_sigaction = &hander    1. set sa_sigaction instead of sa_handler
     		 			 : act.sa_flags = SA_SIGINFO     2. set SA_SIGINFO flag
 	You can now access signal info via. struct siginfo_t { }
-
-
 
 
 
