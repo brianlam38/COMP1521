@@ -1,3 +1,17 @@
+// Final Exam
+-> Know Unix Programming Manual
+-> Three programming tasks
+   [ 2 x easy MIPS & C | 1 x hard C]
+   [ 40 minutes per question ]
+   [ if compiles, partial parks are possible ]
+-> Theory Part
+   [ short answer questions ~7 questions ]
+   [ some possible calculation is required - use the linux calculator ]
+   [ covers a lot of things: what is the output of a program? which page is next under LRU? ]
+   [ tutorial-like questions, quiz-like questions ]
+
+
+
 === 'READ / WRITE / EXE PERMISSIONS' ===
 PERMISSIONS:
 -> '-rwxrwxrwx'
