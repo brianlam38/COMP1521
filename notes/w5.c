@@ -21,7 +21,7 @@ Addr	as destination, value is stored in  memory[Addr] = value
 //=====================================
 // Load and Store Instruction Examples
 //=====================================
-la   $t1,label    # reg[t1] = &Label 				-> Loading ADDRESS only
+la   $t1,label    # reg[t1] = &Label 				    -> Loading ADDRESS only
 lw   $t1,label    # reg[t1] = memory[&label]		-> Loading VALUE at address
 sw   $t3,label    # memory[&label] = reg[t3]		-> Storing value at REG
                   # &label must be 4-byte aligned
