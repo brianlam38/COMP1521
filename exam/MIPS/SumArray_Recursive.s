@@ -14,8 +14,6 @@ total:
 	.word 0
 message:
 	.asciiz "Current Total:"
-eol:
-	.asciiz "\n"
 
 # CODE AREA
 	.text
@@ -79,8 +77,8 @@ sum_of:
 	move $a0 $t3
 	li   $v0 1
 	syscall
-	la  $a0 eol
-	li  $v0 4
+	la  $a0 '\n'
+	li  $v0 11
 	syscall
 		
 	j sum_of
