@@ -116,7 +116,30 @@ main:
 	move $s0, $v0	 # $s0 = $v0
 
 ' === STRUCTS ==='
+// Assuming student struct:
+struct _student {
+	int id; char family[20]; char given[20]; int program; double wam;
+};
+// sizeof(Student) == 56
+stu1:    .space 56		# Student stu1;
+stu2:    .space 56		# Student stu2;
+stu:	 .space 4       # Student *stu; -> ptr to student struct
 
+// Access struct by offset
+init_struct:
+	// access . STUDENT 1
+	li  $t0  5035087
+	sw  $t0, stu1+0       # stu1.id = 5035087;
+	li  $t0, 1521
+	sw  $t0, stu1+44      # stu1.program = 1521;
+	// ptr access -> STUDENT 2
+	la  $s1, stu2         # stu = &stu2;
+	li  $t0, 2041
+	sw  $t0, 44($s1)      # stu->program = 2041;
+	li  $t0, 5034567
+	sw  $t0, 0($s1)       # stu->id = 5034567;
+
+' === LINKED LISTS ==='
 
 
 
