@@ -27,6 +27,10 @@ subu $t3,$t2,$t1  # t3 = t2 - t1  --> subtract as unsigned ints
 
 mul  $t1,$t2,$t3  # t1 = t2 * t3
 div	 $t1,$t2,$t3  # t1 = t2 / t3
+// Special registers
+mfhi $t0          # t0 = Hi		-> Hi = reg1 % reg2 [ remainder ]
+mflo $t1          # t1 = Lo 	-> Lo = reg1 / reg2 [ normal division ]
+								-> FOR MULT, STORE 64-BIT RESULT LO(32) + HI(32)
 
 ' === CONTROL / BRANCHING ==='
 // BRANCHING
@@ -69,6 +73,7 @@ short_var:  .half 4		 # short var = 4;
 float_var:	.float 3.14	 # float f = 3.14;
 
 int_array:  .word 1,3,5  # int v[3] = [1,3,5];
+ 2d_array:	.space 8*8   # int v[2][2] -> un-initialised
 
  str_null:  .asciiz "abc" # char s[4] {'a','b','c','\0'}; -> null-terminated
 	  str:  .ascii "abc"  # char s[3] {'a','b','c'};	  -> un-terminated
@@ -76,19 +81,31 @@ int_array:  .word 1,3,5  # int v[3] = [1,3,5];
 ' === ARRAYS ==='
 // array indexing = offset(register)
     .data
-vec: .space   16      # int vec[4], 16 bytes of storage
+arr:
+	.space   12      # int arr[3] un-initialised
+
     .text
-__start:   
-    la  $t0, vec      # reg[t0] = &vec
-    li  $t1, 5        # reg[t1] = 5
-    sw  $t1, ($t0)    # vec[0] = reg[t1]
-    li  $t1, 13       # reg[t1] = 13
-    sw  $t1, 4($t0)   # vec[1] = reg[t1]
-    li  $t1, -7       # reg[t1] = -7
-    sw  $t1, 8($t0)   # vec[2] = reg[t1]
-    li  $t2, 12       # reg[t2] = 12
-    li  $t1, 42       # reg[t1] = 42
-    sw  $t1, vec($t2) # vec[3] = reg[t1]
+main:
+    la  $t0, vec      # t0 = &arr[0]
+	// INIT METHOD 1
+    li  $t1, 5
+    sw  $t1, ($t0)    # arr[0] = 5
+    li  $t1, 13
+    sw  $t1, 4($t0)   # arr[1] = -13
+    // INIT METHOD 2
+    li  $t2, 12
+    li  $t1, 42
+    sw  $t1, arr($t2) # arr[3] = 42
+
+' === DYNAMIC ALLOCATION (MALLOC) ==='
+
+
+
+
+
+
+
+
 
 
 
