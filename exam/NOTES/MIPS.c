@@ -109,12 +109,6 @@ main:
     mul $t0 row col     -> calculate offset
     lw  $a0 array($t0)	-> a0 = array value via. offset #
 
-' === DYNAMIC ALLOCATION (MALLOC) ==='
-	li   $a0, 20	 # $v0 = malloc(20 bytes)
-	li   $v0, 9
-	syscall
-	move $s0, $v0	 # $s0 = $v0
-
 ' === STRUCT - UNINITIALISED ==='
 // Assuming student struct:
 struct _student {
@@ -143,6 +137,12 @@ stu:
 	.word 1521		# int program = 1521
 	.double 68		# double wam = 68
 
+' === DYNAMIC ALLOCATION (MALLOC) ==='
+	li   $a0, 20	 # $v0 = malloc(20 bytes)
+	li   $v0, 9
+	syscall
+	move $s0, $v0	 # $s0 = $v0
+
 ' === LINKED LISTS ==='
 typedef struct _node Node;
 struct _node {
@@ -158,12 +158,14 @@ struct _node {
    sw   $t0, 0($s0)    # s0->value = 1
    li   $a0, 8         # required: $a0 not persistent
    jal  malloc
-   mv   $t1, $v0       # s1 = malloc(sizeof(Node))
+   move $t1, $v0       # s1 = malloc(sizeof(Node))
    sw   $t1, 4($s0)    # s0->next = s1
    li   $t0, 2
    sw   $t0, 0($t1)    # s1->value = 2
    sw   $0, 4($t1)     # s1->next = NULL
    ...
+
+
 
 
 
