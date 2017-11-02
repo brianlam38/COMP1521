@@ -72,14 +72,22 @@ short_var:  .half 4		 # short var = 4;
  byte_var:  .byte 1		 # char var = 1;
 float_var:	.float 3.14	 # float f = 3.14;
 
-int_array:  .word 1,3,5  # int v[3] = [1,3,5];
- 2d_array:	.space 8*8   # int v[2][2] -> un-initialised
+int_array:  .word 1,3,5  # int a[3] = [1,3,5];
+
+  matrix1:	.space 64	 # int a[4][4]
+ OR
+	 row1:	.space 16
+	 row2:	.space 16
+	 row3:	.space 16
+	 row4:	.space 16
+  matrix2:	.word row1, row2, row3, row4
 
  str_null:  .asciiz "abc" # char s[4] {'a','b','c','\0'}; -> null-terminated
 	  str:  .ascii "abc"  # char s[3] {'a','b','c'};	  -> un-terminated
 
 ' === ARRAYS ==='
-// array indexing = offset(register)
+// array cursor = offset(&array)
+// array indexing = array_label(offset)
     .data
 arr:
 	.space   12      # int arr[3] un-initialised
@@ -87,18 +95,21 @@ arr:
     .text
 main:
     la  $t0, vec      # t0 = &arr[0]
-	// INIT METHOD 1
+	// INIT METHOD 1 -> CURSOR
     li  $t1, 5
     sw  $t1, ($t0)    # arr[0] = 5
     li  $t1, 13
     sw  $t1, 4($t0)   # arr[1] = -13
-    // INIT METHOD 2
+    // INIT METHOD 2 -> INDEX
     li  $t2, 12
     li  $t1, 42
     sw  $t1, arr($t2) # arr[3] = 42
 
 ' === DYNAMIC ALLOCATION (MALLOC) ==='
-
+	li   $a0, 20	 # $v0 = malloc(20 bytes)
+	li   $v0, 9
+	syscall
+	move $s0, $v0	 # $s0 = $v0
 
 
 
