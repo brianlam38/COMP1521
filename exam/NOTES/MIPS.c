@@ -76,7 +76,7 @@ int_array:  .word 1,3,5  # int a[3] = [1,3,5];
 
   matrix1:	.space 64	 # int a[4][4]
  OR
-	 row1:	.space 16
+	 row1:	.space 16	 # int b[4][4]
 	 row2:	.space 16
 	 row3:	.space 16
 	 row4:	.space 16
@@ -85,7 +85,7 @@ int_array:  .word 1,3,5  # int a[3] = [1,3,5];
  str_null:  .asciiz "abc" # char s[4] {'a','b','c','\0'}; -> null-terminated
 	  str:  .ascii "abc"  # char s[3] {'a','b','c'};	  -> un-terminated
 
-' === ARRAYS ==='
+' === ARRAYS - 1D and 2D ==='
 // array cursor = offset(&array)
 // array indexing = array_label(offset)
     .data
@@ -105,11 +105,18 @@ main:
     li  $t1, 42
     sw  $t1, arr($t2) # arr[3] = 42
 
+// 2D arrays
+    mul $t0 row col     -> calculate offset
+    lw  $a0 array($t0)	-> a0 = array value via. offset #
+
 ' === DYNAMIC ALLOCATION (MALLOC) ==='
 	li   $a0, 20	 # $v0 = malloc(20 bytes)
 	li   $v0, 9
 	syscall
 	move $s0, $v0	 # $s0 = $v0
+
+' === STRUCTS ==='
+
 
 
 
