@@ -115,31 +115,55 @@ main:
 	syscall
 	move $s0, $v0	 # $s0 = $v0
 
-' === STRUCTS ==='
+' === STRUCT - UNINITIALISED ==='
 // Assuming student struct:
 struct _student {
 	int id; char family[20]; char given[20]; int program; double wam;
 };
-// sizeof(Student) == 56
-stu1:    .space 56		# Student stu1;
-stu2:    .space 56		# Student stu2;
-stu:	 .space 4       # Student *stu; -> ptr to student struct
-
-// Access struct by offset
+// Access struct by offset;
+	.data
+stu:
+	.space 56		# Student stu;  -> size = 4 + 20 + 20 + 4 =56
 init_struct:
-	// access . STUDENT 1
-	li  $t0  5035087
-	sw  $t0, stu1+0       # stu1.id = 5035087;
-	li  $t0, 1521
-	sw  $t0, stu1+44      # stu1.program = 1521;
-	// ptr access -> STUDENT 2
-	la  $s1, stu2         # stu = &stu2;
+	la  $s1, stu          # stu = &stu2;
 	li  $t0, 2041
-	sw  $t0, 44($s1)      # stu->program = 2041;
+	sw  $t0, 44($s1)      # stu->program = 1521;
 	li  $t0, 5034567
-	sw  $t0, 0($s1)       # stu->id = 5034567;
+	sw  $t0, 0($s1)       # stu->id = 5030587;
+
+' === STRUCT - INITIALISED ==='
+// Follow the above struct
+	.data
+stu:
+	.word 5035087	# int id = 5035087;
+	.asciiz "LAM"	# char family = "LAM\0"; -> PADDING: 20 - 4 bytes
+	.space 16
+	.asciiz "BRIAN" # char given = "BRIAN\0"; -> PADDING: 20 - 6 bytes
+	.space 14
+	.word 1521		# int program = 1521
+	.double 68		# double wam = 68
 
 ' === LINKED LISTS ==='
+typedef struct _node Node;
+struct _node {
+   int  value;  // value stored in Node
+   Node *next;  // pointer to following Node
+};
+
+   ...                 # $s0 represents Node *first
+   li   $a0, 8         # sizeof(Node) == 8
+   jal  malloc
+   move $s0, $v0       # s0 = malloc(sizeof(Node))
+   li   $t0, 1
+   sw   $t0, 0($s0)    # s0->value = 1
+   li   $a0, 8         # required: $a0 not persistent
+   jal  malloc
+   mv   $t1, $v0       # s1 = malloc(sizeof(Node))
+   sw   $t1, 4($s0)    # s0->next = s1
+   li   $t0, 2
+   sw   $t0, 0($t1)    # s1->value = 2
+   sw   $0, 4($t1)     # s1->next = NULL
+   ...
 
 
 
