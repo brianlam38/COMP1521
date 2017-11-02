@@ -43,6 +43,34 @@ Other Operations:
 	int putchar(int c) 		-> write to stdout
 
 
+====== 'VIRTUAL MEMORY' ======
+Locality of reference:
+-> A process is likely to access only a small subset of its pages = "The Working Set"
+-> So it only needs to hold at any given time, the processes'' working set
+
+Page Faults:
+-> Occurs when requesting a non-loaded page
+-> Solved by [1] 'Finding a free page' [2] 'Page Replacement'
+
+Page Replacement:
+-> if p modified, save to disk, grab fno and return
+-> else grab fno and return
+
+"Least Recently Used (LRU)"
+-> When a page is ACCESSED, move to HEAD
+-> Replaces least-accessed page = TAIL
+
+"FIFO"
+-> When a page is LOADED, move to HEAD
+-> Replaces last-loaded page = TAIL
+
+"CLOCK SWEEP"
+-> Maintains reference bit for each frame, updated when page is used
+-> Maintains circular list of all frames
+-> Iterates over list, replacing the first frame with an unreferenced bit
+-> Skip over + reset frames with referenced bit
+
+
 ====== 'OS | PROCESS MANAGEMENT | SIGNALS' ======
 
 OS provides processes with:
