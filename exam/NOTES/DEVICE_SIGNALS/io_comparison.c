@@ -1,4 +1,9 @@
-// READ / WRITE CHAR BY CHAR APPROACH //
+
+
+Comparison between two methods to perform I/O:
+
+
+=== 'METHOD 1: FILE *' ===
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -16,12 +21,10 @@ int main(void)
    return 0;
 }
 
-
-// GETCHAR / PUTCHAR APPROACH //
+=== 'METHOD 2: open File Descriptor' ===
 
 #include <stdlib.h>
 #include <stdio.h>
-
 
 int main(void)
 {
@@ -33,3 +36,4 @@ int main(void)
 
    return 0;
 }
+

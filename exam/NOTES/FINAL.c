@@ -125,9 +125,9 @@
 				-> SUCCESS = No return value
 				-> ERROR = returns -1 and sets 'errno' (read msg via. strerror(errno) / perror(errno))
 
-#######################################
-====== 'IO DEVICES | SIGNALS' ======
-#######################################
+##########################
+====== 'IO DEVICES' ======
+##########################
 	
 	IO devices allow programs to communicate with the outside world.
 	-> 'Device Data' = very slow access [ms], random or sequential, access data in blocks.
@@ -157,17 +157,89 @@
 	-> 'UN-BUFFERED' R/W one byte at a time | 1 real IO operation per element | VERY SLOW
 	-> 'BUFFERED' R/W chunks at a time | data accumulated in buffer | 1 real IO op per chunk of data | FASTER
 
-	I/O Device Operations:
-	// INPUT OUTPUT CONTROL (ioctl) - Manipulates parameters of special files (on an OPEN fd)
+	I/O Device Operations: ioctl() - Input Output Control
+	// Manipulates parameters of special files (on an OPEN fd)
 	int ioctl(int FileDesc, int Request, void *Arg)
-		-> 'Request' = device-specific request code.
-		-> 'Arg' = an int value going to driver OR ptr to data block going to driver or coming from driver
-		-> 'Returns' 0 if OK | -1 if ERROR
+	-> 'Request' = device-specific request code.
+	-> 'Arg' = an int value going to driver OR ptr to data block going to driver or coming from driver
+	-> 'Returns' 0 if OK | -1 if ERROR
 	// Other standard ones:
 	open() | read() | write()
 
-	Signals:
-	-> A notification sent to a process or thread
+	Buffered IO: using read() from a device byte-by-byte is inefficient.
+	-> Data is fed to user program from Buffer without having to access the device each time = 'more efficient'
+	-> <stdio.h> library provides buffering of input via. 'BUFSIZ' macro.
+	-> Buffering is hidden from the user, who only sees getchar() fgets() etc.
+
+	Example implementation of int getc(fp):
+	// read BUFSIZ bytes from open fd into buffer
+	if (pos == BUFSIZ) {
+		read(fileno(fp), buffer, BUFSIZ);		--> 'fileno(FILE *stream)' returns the fd associated with the
+		pos = 0;														   stream pointed to by *stream.
+	}
+	// return buffer, increment pos
+	return buffer[pos++]
+
+
+#######################
+====== 'SIGNALS' ======
+#######################
+
+	'Signals' are a notification sent to a process or thread.
+	'Signal Handlers' are functions invoked in response to a signal.
+
+	Signal Handler operations:
+	---------------------------
+		struct sigaction {
+			void 		(*sa_handler)(int)   					  ... * to signal handling fn.
+			void 		(*sa_sigaction)(int, siginfo_t *, void *) ... * to alt handling fn.
+			sigset_t	sa_mask		 							  ... sets signals to be blocked in handler
+			int 		sa_flags	 							  ... modifiers (e.g. dont block invoking signal)
+		}
+
+		where:
+			void (*sa_handler)(int)						   -> takes in a single argument, the invoking signal
+			void (*sa_sigaction)(int, siginfo_t *, void *) -> first arg is invoking signal, others are context info e.g. uid, gid
+
+		usage of struct:
+			int sigaction(int sig, SigActStruct act, NULL)	-> sigaction(SIGTERM, &act, NULL)
+			-> Assigns an action act for a signal int sig.
+
+	Steps for producing signal handler program:
+	---------------------------------------------
+		1. Create your own function for signal handler behaviour:
+		   -> void handler(int signal)
+		   -> Used to catches the exception/signal
+
+		2. In main()
+		   -> Declare { struct sigaction act } object + initialise it to '\0'
+		   -> memset(&act, '\0', sizeof(act))
+
+		3. Passing address of handler() function to sigaction signal handler "when a signal occurs, the handler() function will be executed"
+		   -> '1 handler arg'   	: act.sa_handler = &handler    - set your own behaviour -
+		   -> '>1 handler args' 	: act.sa_sigaction = &handler  - set your own behaviour -
+		   -> 'take default action' : act.sa_sigaction = SIG_DFL   - stake default behaviour -
+		   -> 'ignore signal'		: act.sa_sigaction = SIG_IGN   - ignore the signal entirely / program keeps running -
+
+		4. Set up signal handler
+		   -> sigaction(SIGUP, &act, NULL)
+		   -> sigaction(SIGTERM, &act, NULL)
+
+		5. If signal handler fails:
+		    if (sigaction(SIGHUP, &act, NULL) < 0) {
+		       perror ("sigaction");
+		       return EXIT_FAILURE;
+		    }
+
+		Optional things for signal handler program:
+		// Blocking certain signal
+		-> 'Blocking signals'  	 : act.sa_mask = SIGTERM    - block the SIGTERM signal -
+
+		// Information about the current process
+		-> 'Information request' : act.sa_sigaction = &hander    1. set sa_sigaction instead of sa_handler
+		    		 			 : act.sa_flags = SA_SIGINFO     2. set SA_SIGINFO flag
+			You can now access signal info via. struct siginfo_t { }
+
 
 
 

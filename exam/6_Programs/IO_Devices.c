@@ -1,6 +1,6 @@
 
 
-Comparison between two methods to perform I/O:
+Comparison between two methods to perform I/O buffering:
 
 
 === 'METHOD 1: FILE *' ===
