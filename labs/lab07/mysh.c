@@ -106,7 +106,7 @@ void execute(char **args, char **path, char **envp)
          char *cmd = malloc(strlen(args[0]) + strlen(path[i])+1);
          strcpy(cmd, path[i]);   // "dir"
          strcat(cmd, "/");       // "/"
-         strcat(cmd, args[0]);   // "args[0"
+         strcat(cmd, args[0]);   // "args[0]"
          // found executable file, set command as file name
          if (isExecutable(cmd)) {
             command = cmd;
