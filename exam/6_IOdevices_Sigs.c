@@ -14,7 +14,7 @@ Example: NETWORK TRANSFER
 -> Typical cost = 0.5 ms [local ethernet] | 200 ms [internet]
 
 ====== 'Device Drivers' ======
-Device Driveres are chunks of code to control an I/O device.
+Device Drivers are chunks of code to control an I/O device.
 -> Often written in assembler + are core components of the operating system.
 
 Each device has its own unique access protocol.

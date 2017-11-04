@@ -74,9 +74,9 @@
 	-> Iterates over list, replacing the first frame with an unreferenced bit
 	-> Skip over + reset frames with referenced bit
 
-#################################################
-====== 'OS | PROCESS MANAGEMENT | SIGNALS' ======
-#################################################
+#######################################
+====== 'OS | PROCESS MANAGEMENT' ======
+#######################################
 
 	OS provides processes with:
 	-> 'Control-flow independence' - process executes as if its the only process running
@@ -124,6 +124,47 @@
 				-> New process inherits open file descriptors from original process.
 				-> SUCCESS = No return value
 				-> ERROR = returns -1 and sets 'errno' (read msg via. strerror(errno) / perror(errno))
+
+#######################################
+====== 'IO DEVICES | SIGNALS' ======
+#######################################
+	
+	IO devices allow programs to communicate with the outside world.
+	-> 'Device Data' = very slow access [ms], random or sequential, access data in blocks.
+	-> 'Memory-based Data' = much faster [ns], random access via. virtual addresses.
+		Transfer via. 'units of bytes, words etc.'
+
+	Device Drivers:
+	-> Code to control I/O of a device. Often written in assembler + core to an OS.
+	-> Each device has its own unique access protocol. Special registers / buffer locations for READ/WRITE
+	-> Typical protocol: send request for operation [R/W/Get Status], receive interrupt when request complete.
+
+	Memory-Mapped IO: IO devices are treated as memory locations
+	-> Virtual Memory addresses are associated with 'data buffers' / 'control registers' of IO device.
+	-> User programs perform IO by getting / putting data into memory.
+	-> 'Advantages': Use of existing memory address = Less Hardware + access to full range of CPU instructions.
+	-> 'Disadvantages': Using up valuable memory address space for processes.
+
+	Devices on UNIX/LINUX:
+	-> Unix treats devices all the same as 'byte-streams' (similar to files)
+	-> Devices can be accessed via. '/dev':
+	'/dev/diskN' = part of the HD, '/dev/ttyN' = a terminal '/dev/mem' = physical memory, '/dev/random' = rando num generator
+
+	Device Files: a special file that allows software to interact with a device driver using IO system calls.
+	-> Two types of Device Files:
+	   [1] 'Character Files' provide un-buffered access to hardware devices.
+	   [2] 'Block Files' provide byffered access to hardware devices.
+	-> 'UN-BUFFERED' R/W one byte at a time | 1 real IO operation per element | VERY SLOW
+	-> 'BUFFERED' R/W chunks at a time | data accumulated in buffer | 1 real IO op per chunk of data | FASTER
+
+	I/O Device Operations:
+	// INPUT OUTPUT CONTROL (ioctl) - Manipulates parameters of special files (on an OPEN fd)
+	int ioctl(int FileDesc, int Request, void *Arg)
+		-> 'Request' = device-specific request code.
+		-> 'Arg' = an int value going to driver OR ptr to data block going to driver or coming from driver
+		-> 'Returns' 0 if OK | -1 if ERROR
+	// Other standard ones:
+	open() | read() | write()
 
 	Signals:
 	-> A notification sent to a process or thread
