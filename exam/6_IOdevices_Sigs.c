@@ -42,7 +42,7 @@ Unix treats devices all the same as 'byte-streams' (similar to files)
 Devices can be accessed via. file system under '/dev':
 	'/dev/diskN' ... part of a hard-drive
 	'/dev/ttyN'  ... a terminal device
-	'/dev/ptyN'  ... a pseudo-terminal device
+	'/dev/ptyN'  ... a pseudo-terminal deviceå
 Other interesting devices in '/dev':
 	'/dev/mem'   ... the physical memory
 	'/dev/null'  ... data sink

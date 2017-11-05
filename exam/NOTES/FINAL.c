@@ -212,8 +212,8 @@
 		   -> Used to catches the exception/signal
 
 		2. In main()
-		   -> Declare { struct sigaction act } object + initialise it to '\0'
-		   -> memset(&act, '\0', sizeof(act))
+		   -> Declare a { struct sigaction act }  object
+		   -> Initialise the struct to '\0' memset(&act, '\0', sizeof(act))
 
 		3. Passing address of handler() function to sigaction signal handler "when a signal occurs, the handler() function will be executed"
 		   -> '1 handler arg'   	: act.sa_handler = &handler    - set your own behaviour -
@@ -236,8 +236,8 @@
 		-> 'Blocking signals'  	 : act.sa_mask = SIGTERM    - block the SIGTERM signal -
 
 		// Information about the current process
-		-> 'Information request' : act.sa_sigaction = &hander    1. set sa_sigaction instead of sa_handler
-		    		 			 : act.sa_flags = SA_SIGINFO     2. set SA_SIGINFO flag
+		-> 'Information request' : 1. act.sa_sigaction = &hander    -> set sa_sigaction instead of sa_handler
+		    		 			 : 2. act.sa_flags = SA_SIGINFO     -> set SA_SIGINFO flag
 			You can now access signal info via. struct siginfo_t { }
 
 
