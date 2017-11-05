@@ -1,3 +1,34 @@
+###################################################
+====== 'BITWISE OPERATIONS | RWX PERMISSIONS' =====
+###################################################
+
+	BITWISE OPERATORS: '& | ^ ~ << >>'
+	
+	Checking status of bit : Set mask = 1 -> bit '&' mask
+	Turning a bit ON 	   : Set mask = 1 -> bit '|' mask
+	Turning a bit OFF 	   : Set mask = 0 -> bit '&' mask
+	Toggle bits ON or OFF  : '^'bit_sequence -> one or the other, but not both
+	Negation of bits 	   : '~'bit_sequence -> flips all bits / opposite
+	Shifting bits left 	   : '<< x' shifting bits X positions left
+	Shifting bits right	   : '>> x' shifting bits X positions right
+
+	READ / WRITE / EXE PERMISSIONS:
+	-> '-rwxrwxrwx'
+	0 = '---'	4 = '-r-'		[ 'r' = read ]
+	1 = '--x'	5 = 'r-x'		[ 'w' = write ]
+	2 = '-w-'	6 = 'rw-'		[ 'x' = execute ]
+	3 = '-wx'	7 = 'rwx'
+
+	USAGE WITH FILE SYS OPERATIONS:
+	-> Mask mode number with 0x1FF (0b111111111) to remove 3 excess octal permission digits
+	-> Example: mode meta-data usually: 100664 -> cut out 100 -> remaining 644 is for permissions
+	unsigned mask = 0x1FF; // 
+	unsigned bits = mode & mask;
+	// setting bit permissions format: OWNER|GROUP|OTHER
+	unsigned owner = bits & 0x07;           // 0b111       ... retains [0][1][2] for owner
+	unsigned group = (bits & 0x38) >> 3;    // 0b111111    ... retains [3][4][5] for group
+	unsigned other = (bits & 0x1C0) >> 6;   // 0b111111111 ... retains [6][7][8] for others
+
 ############################################################
 ====== 'UNIX-LINUX FILE SYSTEMS | FILE SYS OPERATIONS' =====
 ############################################################
@@ -343,7 +374,7 @@
 		-> Return socket descriptor or -1 on error.
 	int bind(int Sockfd, SockAddr *Addr, socklen_t AddrLen) ... associates an open socket with an IP+Port address
 	int listen(int Sockfd, int Backlog)						... wait for connection on socket Sockfd
-	
+
 	SockAddr = struct sockaddr_in							... C struct containing components of the socket address
 
 	int accept(int Sockfd, SockAddr *Addr, socklen_t *AddrLen)   ... accept a connection on a socket

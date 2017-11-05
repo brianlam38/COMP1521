@@ -23,8 +23,8 @@ PERMISSIONS:
 USAGE WITH FILE SYS OPERATIONS:
 // Mask mode code with 0x1FF (0b111111111) to remove 3 excess octal permission digits
 // Mode meta-data usually: 100664 -> cut out 100
-	unsigned mask = 0x1FF;
-	unsigned bits = mode & mask;
+	 unsigned mask = 0x1FF; // 
+	 unsigned bits = mode & mask;
 // assigning portions of bits to owner|group|other
     unsigned owner = bits & 0x07;           // 0b111       ... retains [0][1][2] for owner
     unsigned group = (bits & 0x38) >> 3;    // 0b111111    ... retains [3][4][5] for group

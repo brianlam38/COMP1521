@@ -45,7 +45,7 @@ Shifting bits LEFT:
 - LHS bits are removed / truncated, RHS bits are replaced by 0
 
 Shifting bits RIGHT:
-- Shift a sequence oef bits RIGHT, by X positions ' >> X '
+- Shift a sequence of bits RIGHT, by X positions ' >> X '
 - LHS bits are replaced by 0, RHS bits are removed / truncated
 - If the value is SIGNED, the SIGNED-BITS replaces the LHS
 
