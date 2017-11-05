@@ -16,6 +16,7 @@ lb   $t2,label    # t2 = byte at label
 sb   $t4,label    # label = byte at t4
 move $t2,$t3      # t2 = t3
 li   $t1,888	  # t1 = 888
+li   $a0, 'A'
 
 ' === MATHS ==='
 add  $t0,$t1,$t2  # t0 = t1 + t2  --> add as signed ints
