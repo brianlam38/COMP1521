@@ -145,26 +145,62 @@ stu:
 	move $s0, $v0	 # $s0 = $v0
 
 ' === LINKED LISTS ==='
-typedef struct _node Node;
-struct _node {
-   int  value;  // value stored in Node
-   Node *next;  // pointer to following Node
-};
 
-   ...                 # $s0 represents Node *first
-   li   $a0, 8         # sizeof(Node) == 8
-   jal  malloc
-   move $s0, $v0       # s0 = malloc(sizeof(Node))
-   li   $t0, 1
-   sw   $t0, 0($s0)    # s0->value = 1
-   li   $a0, 8         # required: $a0 not persistent
-   jal  malloc
-   move $t1, $v0       # s1 = malloc(sizeof(Node))
-   sw   $t1, 4($s0)    # s0->next = s1
-   li   $t0, 2
-   sw   $t0, 0($t1)    # s1->value = 2
-   sw   $0, 4($t1)     # s1->next = NULL
-   ...
+	// Typical Node struct in C
+	typedef struct _node Node;
+	struct _node {
+	   int  value;
+	   Node *next;
+	};
+
+	// Example of creating nodes without malloc
+		.data
+	Node1:
+		.word 1		// node->val
+		.word Node2 // node->*next
+	Node2:
+		.word 2
+		.word 0		// 0 = NULL
+
+	// Example of dynamically creating nodes with malloc
+   	...
+   	li   $a0, 8         # sizeof(Node) == 8
+   	jal  malloc
+   	move $s0, $v0       # s0 = malloc(sizeof(Node))	-> s0 represents the L->head node
+   	li   $t0, 1										   which links to node->next etc.
+   	sw   $t0, 0($s0)    # s0->value = 1
+   	li   $a0, 8
+   	jal  malloc
+   	move $t1, $v0       # s1 = malloc(sizeof(Node))
+   	sw   $t1, 4($s0)    # s0->next = s1
+   	li   $t0, 2
+   	sw   $t0, 0($t1)    # s1->value = 2
+   	sw   $0, 4($t1)     # s1->next = NULL
+   	...
+
+' === SAVING REGISTERS TO THE STACK (DYNAMIC ALLOCATION) ==='
+
+	When using a $s0 register that will persist across functions,
+	always save the $s0 register to the stack so that it retains the previous value in another function.
+
+	function:
+		# prologue
+		addi $sp, $sp, -12	# add 12 bytes to the stack - or however many bytes you want
+		sw   $fp, 0($sp)	# store the frame pointer
+		sw   $s0, -4($sp)	# store val $s0 in the stack space + offset -4
+		sw   $s1, -8($sp)	# store val $s1 in the stack space + offset -8
+
+		# function body
+		move $a0, $s0		# perform operations with now saved values on the stack
+		move $a1, $s1
+
+		# epilogue
+		lw   $fp,  0($sp)	# restore the old values
+		lw   $s0, -4($sp)
+		lw   $s1, -8($sp)
+		addi $sp, $sp, 8	# restore stack space
+
+
 
 
 
