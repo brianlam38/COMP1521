@@ -295,29 +295,98 @@
 		-> Sender may block, waiting for message to be received
 
 	Semaphore Operations on LINUX/UNIX:
-	#include <semaphore.h>
-	int sem_init(sem_t *Sem, int Shared, uint Value) 	... Create a semaphore object, set init value
-															-> 'Init value usually = 1'
+		#include <semaphore.h>
+		int sem_init(sem_t *Sem, int Shared, uint Value) 	... Create a semaphore object, set init value
+																-> 'Init value usually = 1'
 
-	int sem_wait(sem_t *Sem) i.e wait()		... if Sem > 0, decrement Sem and continue
-												else block process and keep waiting until if condition is broken.
-												-> Has variants that dont block, but return error if cant decrement
+		int sem_wait(sem_t *Sem) i.e wait()		... if Sem > 0, decrement Sem and continue
+													else block process and keep waiting until if condition is broken.
+													-> Has variants that dont block, but return error if cant decrement
 
-	int sem_post(sem_t *Sem) i.e signal()	... Increment the value of semaphore Sem + take the first process off the Queue() and run the process
-												-> Transfers a blocked process from semaphores waiting -> ready Queue()
-												-> 'Fair Release policy' is needed for blocked processes, otherwise 'starvation' is possible.
+		int sem_post(sem_t *Sem) i.e signal()	... Increment the value of semaphore Sem + take the first process off the Queue() and run the process
+													-> Transfers a blocked process from semaphores waiting -> ready Queue()
+													-> 'Fair Release policy' is needed for blocked processes, otherwise 'starvation' is possible.
 
-	int sem_destroy(sem_t *Sem)				... Free all memory associated with sempahore Sem
+		int sem_destroy(sem_t *Sem)				... Free all memory associated with sempahore Sem
 
+	Message Passing Operations in C is provided my 'Message Queues'
+		#include <mqueue.h>
+		mqd_t mq_open(char *Name, int Flags)	... Create a new message queue, or open an existing one
 
+		int mq_send(mqd_t *MQ, char *Msg,		... Adds message 'Msg' to 'MQ message queue'
+					int Size, uint Prio)  			-> 'Prio' gives priority from queue MQ
+													-> Blocks if MQ is empty, can run non-blocking			
+																	
+		int mq_close(mqd_t *MQ)					... finish accessing message queue MQ
 
+########################
+====== 'NETWORKS' ======
+########################
 
+	Internet Communications are based on a '5-layer stack'
+	[1] 'Physical Layer' - bits on wires, fibre optic or radio
+	[2] 'Link Layer' - ethernet, MAC addressing
+	[3] 'Network Layer' - routing protocols, IP
+	[4] 'Transport Layer' - data transfer, TCP/UDP
+	[5] 'Application Layer' - DNS, HTTP, email, Skype, torrents, FTP etc.
 
+	A 'Socket' is an endpoint for sending / receiving data between two processes.
+	
+	UNIX socket operations:
+	--------------------------------
+	#include <sys/socket.h>
 
+	int socket(int Domain, int Type, int Protocol) ... creates a socket. sockets are similar to int fd
+		-> 'Domain'   : AF_LOCAL, AF_INET
+		-> 'Type'     : SOCK_STREAM | SOCK_DGRAM
+		-> 'Protocol' : Communications Protocol [ TCP, UDP, IP etc. ]
+		-> Return socket descriptor or -1 on error.
+	int bind(int Sockfd, SockAddr *Addr, socklen_t AddrLen) ... associates an open socket with an IP+Port address
+	int listen(int Sockfd, int Backlog)						... wait for connection on socket Sockfd
+	
+	SockAddr = struct sockaddr_in							... C struct containing components of the socket address
 
+	int accept(int Sockfd, SockAddr *Addr, socklen_t *AddrLen)   ... accept a connection on a socket
+																	 -> Sockf should already be 'created', 'bound', 'listening'
+	int connect(int Sockfd, SockAddr *Addr, socklen_t *AddrLen)  ... connects the socket Sockfd to address *Addr
 
+	--------------------------------
 
+	[1] THE APPLICATION LAYER:
+		'IP ADDRESSING': 32 bit identifier + Port Number e.g. 129.68.111.10:80
+		'PROTOCOLS': HTTP, Skype etc.
+		'DOMAIN NAME SYSTEM (DNS)': provides URL name -> IP address mapping
+		-> Implementing across a hierarchy of Name Servers, which resolve names to IP addresses.
+		-> Why not centralise DNS? Single point of failure, maintenance of large DB.
+		-> Two methods of name resolution [1] Iterated Query ... work done by client [2] Recursive Query ... work done by NS.
+		-> Top-Level-Domain TLD .com .org .edu and all country-level domains
+		-> Authoritative Name Servers maintain mappings names -> IP addr within an organisation
 
+	[2] THE TRANSPORT LAYER:
+		The transport layer deals with:
+		-> Data Integrity, Timing, Throughput, Security
+		'PROTOCOLS': TCP and UDP
+		-> TCP = reliable, connection-orientated, byte-stream
+		-> UDP = un-reliable, simple, connectionless, segments
+
+	[3] THE NETWORK LAYER:
+		'PROTOCOLS': Internet Protocol IP provides host addressing and routing of packets
+
+	[4] THE LINK LAYER:
+		Takes packets from the network layer and transmits them.
+		Each host [router] on the network has a network layer implementation, containing a 'Network Interface Card (NIC)'
+		Implemented as a combination of hardware/software.
+		Services provided: 'flow control', 'error detection', 'error correction'
+
+		Ethernet is a cable physically connecting multiple hosts.
+		-> Data is broadcast on cable, tagged with receiver MAC address. Devices recognise their own data using MAC address.
+		-> Ethernet is a shared broadcasting medium so there can be:
+			'Interference' - Two packets broadcast at the same time
+			'Collision'    - Node receives two or more signals at the same time
+		-> 'Multiple Access Protocols' handle this.
+			'Channel Partitioning' - Partition channel based on time-slices/frequency-bands
+			'Random Access'		   - Allow collisions, need mechanisms to recover from collisions
+			'Taking Turns'		   - Nodes take turns, nodes with more to send get longer turns
 
 
 
