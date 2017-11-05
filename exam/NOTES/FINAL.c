@@ -268,6 +268,48 @@
 	   -> return 0  if locked acquired
 	   -> return -1 if process would be blocked
 
+###########################
+====== 'CONCURRENCY' ======
+###########################
+
+	Concurrency = multiple processes running simultaneously.
+	Sequential execution = opposite of concurrency, where each process waits their turn.
+
+	Effects of poorly controlled concurrency:
+	-> 'Non-determinism'	... same code, different runs, different results each time
+	-> 'Deadlock'			... a group of processes end up waiting for each other,
+								as they need something from each other to proceed.
+	-> 'Starvation'			... a process keeps missing access to a shared resource.
+	We need concurrency control methods to address these issues.
+
+	Concurrency Control aims to provide correct sequencing of interactions between processes.
+	Co-ordination of access to shared resources.
+	
+	Two classes of Concurrency Control:
+	[1] 'SHARED MEMORY - Semaphores'
+		-> Uses a shared variable, manipulated atomically. 'Atomic = appears to the rest of the system to occur instantly'
+		-> Blocks access if unavailable
+	[2] 'MESSAGE PASSING - Send / Receive'
+		-> Processes communicate by sending / receiving messages
+		-> Receiver can block, waiting for message to arrive
+		-> Sender may block, waiting for message to be received
+
+	Semaphore Operations on LINUX/UNIX:
+	#include <semaphore.h>
+	int sem_init(sem_t *Sem, int Shared, uint Value) 	... Create a semaphore object, set init value
+															-> 'Init value usually = 1'
+
+	int sem_wait(sem_t *Sem) i.e wait()		... if Sem > 0, decrement Sem and continue
+												else block process and keep waiting until if condition is broken.
+												-> Has variants that dont block, but return error if cant decrement
+
+	int sem_post(sem_t *Sem) i.e signal()	... Increment the value of semaphore Sem + take the first process off the Queue() and run the process
+												-> Transfers a blocked process from semaphores waiting -> ready Queue()
+												-> 'Fair Release policy' is needed for blocked processes, otherwise 'starvation' is possible.
+
+	int sem_destroy(sem_t *Sem)				... Free all memory associated with sempahore Sem
+
+
 
 
 
