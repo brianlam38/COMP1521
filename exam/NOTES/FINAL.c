@@ -240,6 +240,44 @@
 		    		 			 : 2. act.sa_flags = SA_SIGINFO     -> set SA_SIGINFO flag
 			You can now access signal info via. struct siginfo_t { }
 
+#####################################
+====== 'INTERACTING PROCESSES' ======
+#####################################
+
+	Processes can interact with each other in several ways.
+	Uncontrolled interaction is a problem and may cause 'NON-DETERMINISTIC' behaviour.
+	Mechanisms exist to control process interactions / access to files.
+
+	File Locking flock(int fd, int Operation) controls access to shared files
+	-> 'Operation':
+			'LOCK_SH' ... acquire shared lock
+			'LOCK_EX' ... acquire exclusive lock
+			'LOCK_UN' ... unlock
+			'LOCK_NB' ... operation fails rather than blocking
+	-> flock() only ATTEMPTS to acquire a lock, only works correctly if all processes that access the file use locks
+	-> return 0 success | return -1 failure
+
+	FILE LOCKING SCENARIOS:
+	1. Process tries to acquire a 'shared lock - LOCK_SH':
+	   -> If file NOT locked or other shared locks = OK
+	   -> If file locked = BLOCKED
+	2. Process tries to acquire an 'exclusive lock - LOCK_EX'
+	   -> If file NOT locked = OK
+	   -> If file shared or exclusive lock = BLOCKED
+	3. If a process is using a 'non-blocking lock'
+	   -> return 0  if locked acquired
+	   -> return -1 if process would be blocked
+
+
+
+
+
+
+
+
+
+
+
 
 
 
