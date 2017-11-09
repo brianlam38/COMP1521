@@ -9,7 +9,7 @@
 int main(void)
 {
    int pid;
-   // fork child
+   // PARENT PROCESS -> fork child
    if ((pid = fork()) != 0) {
       int i; char c;
       setbuf(stdout, NULL);
@@ -26,6 +26,7 @@ int main(void)
       flock(1, LOCK_UN);
    }
    else {
+      // CHILD PROCESS
       int i; char c;
       setbuf(stdout, NULL);
       // acquire exclusive lock on fd#1 = stdout

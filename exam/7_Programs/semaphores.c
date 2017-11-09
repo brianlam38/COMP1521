@@ -44,3 +44,13 @@ int withdraw(Account acct, int howMuch)
    signal(acct.sem);
    return res;
 }
+
+
+
+
+
+
+
+
+
+

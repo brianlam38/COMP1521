@@ -124,3 +124,45 @@ int main (int argc, char *argv[])
 }
 
 
+===============
+'SIGACTION'
+===============
+
+int main() {
+   struct sigaction act;
+   memset(&act, 0, sizeof(act));
+   act.sa_handler = SIG_IGN;     -> SIG_IGN is a macro that tells process to ignore signals.
+                                       i.e. CTRL+C signal will be ignored if SIG_IGN is used.
+                                    Used in place of a handler function.
+
+   if (fork() != 0) {
+      // Parent Process
+      sigaction(SIGINT, &act, NULL);
+      copyInput("Parent");
+   } else if (fork() != 0) {
+      // Child Process
+      sigaction(SIGINT, &act, NULL);
+      copyInput("Child");
+   } else {
+      // Grandchild Process
+      copyInput("Grand-child");
+   }
+
+   return 0;
+}
+
+void copyInput(char *name) {
+   pid_t mypid = getpid();
+   char line[MAXLINE]
+   printf("%s (%d) ready\n", name, mypid);
+   while (fgets(line, MAXLINE, stdin) != NULL) {
+      printf("%s: %s", name, line);
+      sleep(random()%3);
+   }
+}
+
+
+
+
+
+
